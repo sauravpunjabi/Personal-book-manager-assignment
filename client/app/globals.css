@@ -1,19 +1,36 @@
 @import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* A paper-and-ink palette. Flat colour throughout — depth comes from
+     spacing, weight and hairline rules rather than gradients or shadows. */
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+  --color-ink: #1c1917;
+  --color-muted: #79716b;
+  --color-line: #e7e1d6;
+  --color-danger: #a8322a;
+
+  --color-status-want: #b4762b;
+  --color-status-reading: #2f5d8a;
+  --color-status-done: #3c6b4a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-work-sans), system-ui, sans-serif;
 }
 
+/* Reference the next/font variable directly. Going through --font-sans would
+   pick up Tailwind's own default token instead, because @theme inline does not
+   emit a custom property for it. */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-work-sans), system-ui, sans-serif;
+}
+
+/* Keep focus visible everywhere. Never remove it — restyle it. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
