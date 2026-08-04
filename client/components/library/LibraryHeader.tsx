@@ -26,8 +26,7 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
   const view = useFilterStore((state) => state.view);
   const setView = useFilterStore((state) => state.setView);
 
-  // Safe to read the clock here: ProtectedLayout holds a spinner until auth
-  // resolves, so this only ever renders in the browser.
+  // Safe to read the clock: this only ever renders in the browser
   const greeting = greetingFor(new Date().getHours());
   const reading = books.filter((book) => book.status === 'reading');
 

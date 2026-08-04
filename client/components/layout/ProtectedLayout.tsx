@@ -21,14 +21,12 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  // Showing the shell rather than a spinner means the session check and the
-  // book fetch read as one continuous load instead of two separate flashes.
+  // The shell rather than a spinner, so the load reads as one step instead of two
   if (isLoading) {
     return <LibraryShellSkeleton />;
   }
 
-  // Nothing renders during the redirect — showing the page first would leak a
-  // flash of someone else's library.
+  // Nothing renders mid-redirect, or we would flash someone else's library
   if (!isAuthenticated) {
     return null;
   }

@@ -3,11 +3,7 @@ import { DM_Sans } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
 
-/**
- * Libertinus Serif carries the headings. It is served from Google Fonts but
- * missing from this Next version's font list, so the files are vendored and
- * loaded locally — which also means no request to a third party at runtime.
- */
+/** Libertinus is vendored: it is missing from this Next version font list */
 const libertinus = localFont({
   variable: '--font-libertinus',
   display: 'swap',
@@ -27,7 +23,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Bookmark',
+  title: 'Chapter',
   description:
     'A quiet place for the books you are reading, finished, and still to start.',
 };
@@ -38,16 +34,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The inline script below deliberately mutates <html> before hydration, so
-    // React is told to expect this one element to differ.
+    // The inline script below mutates <html> before hydration, hence the suppress
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Runs before first paint: an explicit choice wins, otherwise follow
-            the operating system. Either way there is no flash of the wrong
-            palette on load. */}
+        {/* Runs before first paint so there is no flash of the wrong palette */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var s=localStorage.getItem('bookmark-theme');var d=s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.dataset.theme='dark'}catch(e){}`,
+            __html: `try{var s=localStorage.getItem('chapter-theme');var d=s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.dataset.theme='dark'}catch(e){}`,
           }}
         />
       </head>

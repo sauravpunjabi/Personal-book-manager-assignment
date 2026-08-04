@@ -21,8 +21,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useFilterStore } from '@/store/filter.store';
 import type { Book, BookStatus, CreateBookInput } from '@/types/book';
 
-// Long enough to notice the toast and react. The design's 3.2s is fine for a
-// message that only informs; this one gates something irreversible.
+// Long enough to notice and react, since this one gates something irreversible
 const UNDO_WINDOW_MS = 5000;
 
 export default function LibraryPage() {
@@ -43,8 +42,7 @@ export default function LibraryPage() {
   const [removed, setRemoved] = useState<Book | null>(null);
   const [toastMessage, setToastMessage] = useState('');
 
-  // The book awaiting permanent deletion, held in a ref so the timer and the
-  // unmount cleanup always see the current value rather than a stale closure.
+  // Held in a ref so the timer and the unmount cleanup never see a stale value
   const removedRef = useRef<Book | null>(null);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,9 +63,7 @@ export default function LibraryPage() {
     void loadBooks();
   }, [loadBooks]);
 
-  // Filtering happens here rather than on the server because the sidebar needs
-  // counts across every shelf at the same time as the grid shows one of them —
-  // a filtered response cannot answer both. The API still supports filtering.
+  // Filtered here because the sidebar needs every shelf count while the grid shows one
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
 
@@ -95,8 +91,7 @@ export default function LibraryPage() {
     return [...matched].sort(order[sort]);
   }, [books, status, tag, query, sort]);
 
-  // Looked up rather than stored, so the drawer always shows the current book
-  // — a status change made inside it is reflected straight away.
+  // Looked up, not stored, so a status change inside the drawer shows immediately
   const detail = useMemo(
     () => books.find((book) => book._id === detailId) ?? null,
     [books, detailId]
@@ -156,10 +151,7 @@ export default function LibraryPage() {
     }
   }
 
-  /**
-   * Sends the delete the server actually acts on. Called when the undo window
-   * closes, when another book is removed, or on the way out of the page.
-   */
+  /** Fires the delete the server acts on, once the undo window has closed */
   const commitRemoval = useCallback(() => {
     const book = removedRef.current;
 
@@ -210,8 +202,7 @@ export default function LibraryPage() {
     setBooks((current) => [book, ...current]);
   }
 
-  // Leaving the page commits immediately. Without this a pending delete would
-  // simply be forgotten and the book would reappear on the next visit.
+  // Leaving the page commits, or a pending delete would quietly be forgotten
   useEffect(() => commitRemoval, [commitRemoval]);
 
   function confirmDelete() {

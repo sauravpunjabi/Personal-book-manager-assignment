@@ -9,8 +9,7 @@ import { notFoundHandler } from './middleware/notFound';
 
 const app = express();
 
-// The JWT travels in a cookie, so the browser only sends it when the origin is
-// named explicitly. A wildcard origin is not allowed alongside credentials.
+// The JWT rides in a cookie, so the origin must be named — no wildcard allowed
 app.use(
   cors({
     origin: process.env.CLIENT_ORIGIN,

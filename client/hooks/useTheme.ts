@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark';
 
-export const THEME_STORAGE_KEY = 'bookmark-theme';
+export const THEME_STORAGE_KEY = 'chapter-theme';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -17,11 +17,7 @@ function storedChoice(): Theme | null {
   }
 }
 
-/**
- * The system preference is the default; an explicit toggle overrides it and is
- * remembered. The inline script in the root layout runs the same rule before
- * paint, so this hook only reads back what is already on the element.
- */
+/** System preference by default; an explicit toggle overrides it and is kept */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light');
 
@@ -55,8 +51,7 @@ export function useTheme() {
       try {
         window.localStorage.setItem(THEME_STORAGE_KEY, next);
       } catch {
-        // Private browsing can refuse storage. The toggle still works for this
-        // visit, it just will not be remembered.
+        // Private browsing can refuse storage; the toggle still works for this visit
       }
 
       return next;

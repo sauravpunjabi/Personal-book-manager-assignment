@@ -20,10 +20,7 @@ export function signToken(userId: string): string {
   return jwt.sign({ id: userId }, getSecret(), { expiresIn: TOKEN_TTL });
 }
 
-/**
- * Throws on an invalid, expired or malformed token. Callers decide what that
- * means — the middleware turns it into a 401.
- */
+/** Throws on a bad or expired token and lets the middleware answer with a 401 */
 export function verifyToken(token: string): TokenPayload {
   const payload = jwt.verify(token, getSecret());
 

@@ -17,10 +17,7 @@ function requireUserId(req: Request): string {
   return userId;
 }
 
-/**
- * Loads a book only if it belongs to the caller. An unknown id and a malformed
- * id both read as "not found" — a CastError would otherwise surface as a 500.
- */
+/** Loads a book only if it belongs to the caller; a bad id reads as not found */
 async function loadOwnedBook(bookId: unknown, ownerId: string): Promise<IBook> {
   if (typeof bookId !== 'string' || !Types.ObjectId.isValid(bookId)) {
     throw new HttpError(404, 'Book not found');

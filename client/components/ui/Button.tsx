@@ -35,8 +35,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      // The label stays in the DOM while loading so the button keeps its width
-      // and the row does not jump.
+      // Label stays in the DOM while loading so the button keeps its width
       className={cn(
         'relative inline-flex items-center justify-center gap-2 rounded-[12px] font-medium',
         'transition-[transform,filter,background-color,border-color,color] duration-200',

@@ -15,8 +15,7 @@ import {
   type CreateBookInput,
 } from '@/types/book';
 
-// Page counts arrive as strings from number inputs, so they are coerced and
-// bounded here rather than trusted.
+// Number inputs hand back strings, so page counts are coerced and bounded here
 const pageCount = z
   .string()
   .refine((value) => value === '' || /^\d{1,5}$/.test(value), 'Use a whole number');

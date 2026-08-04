@@ -12,8 +12,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  // Starts loading so a protected page shows a spinner rather than flashing
-  // the login redirect before the session has been resolved.
+  // Starts loading so a protected page never flashes the redirect first
   user: null,
   isAuthenticated: false,
   isLoading: true,

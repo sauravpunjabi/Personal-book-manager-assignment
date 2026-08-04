@@ -10,10 +10,7 @@ interface DeleteModalProps {
   onCancel: () => void;
 }
 
-/**
- * No loading state here — confirming only queues the removal, and the undo
- * toast on the page is what covers the window before it becomes permanent.
- */
+/** No spinner needed: confirming only queues the removal, undo covers the rest */
 export function DeleteModal({
   isOpen,
   bookTitle,

@@ -10,10 +10,7 @@ interface CoverPickerProps {
   onChange: (cover: number) => void;
 }
 
-/**
- * Live preview plus the eight palette swatches. Choosing is optional — the
- * server picks one from the title if the reader never touches this.
- */
+/** Live preview and swatches; the server picks a colour if nobody chooses one */
 export function CoverPicker({ title, author, cover, onChange }: CoverPickerProps) {
   return (
     <div className="flex-none">
@@ -21,6 +18,7 @@ export function CoverPicker({ title, author, cover, onChange }: CoverPickerProps
 
       <BookCover
         book={{ title: title.trim() || 'Untitled', author, cover }}
+        scale={0.58}
         className="w-[104px] transition-[background] duration-300"
       />
 

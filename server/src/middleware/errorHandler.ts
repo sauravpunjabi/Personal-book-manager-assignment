@@ -12,10 +12,7 @@ function readStatusCode(error: unknown): number {
   return SERVER_ERROR;
 }
 
-/**
- * Express identifies error handlers by their four-argument signature, so the
- * unused `next` has to stay. Anything thrown in a route ends up here.
- */
+/** Express spots error handlers by arity, so the unused next has to stay */
 export function errorHandler(
   error: unknown,
   _req: Request,
@@ -27,8 +24,7 @@ export function errorHandler(
 
   console.error(error);
 
-  // 4xx messages are written for the client. 5xx messages are not — they can
-  // leak driver internals or query details, so they stay on the server.
+  // 5xx text can leak driver internals, so it never reaches the client
   const message =
     error instanceof Error && (statusCode < SERVER_ERROR || isDevelopment)
       ? error.message

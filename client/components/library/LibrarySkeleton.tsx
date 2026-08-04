@@ -5,7 +5,7 @@ export function LibrarySkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-6 gap-y-[34px] sm:grid-cols-[repeat(auto-fill,minmax(172px,1fr))]"
+      className="grid grid-cols-[repeat(auto-fill,minmax(158px,1fr))] gap-x-6 gap-y-9 sm:grid-cols-[repeat(auto-fill,minmax(186px,1fr))]"
     >
       {Array.from({ length: PLACEHOLDER_COUNT }, (_, index) => (
         <div

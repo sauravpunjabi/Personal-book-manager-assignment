@@ -3,13 +3,7 @@ import type { CookieOptions, Response } from 'express';
 const TOKEN_COOKIE = 'token';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-/**
- * In production the client (Vercel) and the API (Railway) sit on different
- * domains, which makes every request cross-site — SameSite=Lax would drop the
- * cookie entirely. SameSite=None is required there, and browsers only accept
- * it over HTTPS. Locally both run on localhost, so Lax works and keeps the
- * cookie usable without TLS.
- */
+/** SameSite=None in production, because Vercel and Railway are different domains */
 function cookieOptions(): CookieOptions {
   const isProduction = process.env.NODE_ENV === 'production';
 

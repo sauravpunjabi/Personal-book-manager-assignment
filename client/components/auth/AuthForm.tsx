@@ -13,9 +13,7 @@ import { useAuthStore } from '@/store/auth.store';
 
 export type AuthMode = 'signin' | 'signup';
 
-// Both modes resolve to the same shape so one useForm can serve either. Signin
-// simply never renders the name field, and its default of '' satisfies the
-// schema without a rule that would reject an empty value.
+// Both modes share a shape so one useForm serves either; signin just hides name
 const signinSchema = z.object({
   name: z.string(),
   email: z.email('Enter a valid email address'),
@@ -32,10 +30,7 @@ type AuthValues = z.infer<typeof signupSchema>;
 
 const FIELD_NAMES = ['name', 'email', 'password'] as const;
 
-/**
- * Remounted by the page whenever the mode flips, which swaps the schema and
- * clears anything typed into the previous form in one go.
- */
+/** Remounted on every mode flip, which swaps the schema and clears the fields */
 export function AuthForm({ mode, cta }: { mode: AuthMode; cta: string }) {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
@@ -66,8 +61,7 @@ export function AuthForm({ mode, cta }: { mode: AuthMode; cta: string }) {
     } catch (error) {
       const { message, fieldErrors } = getApiError(error);
 
-      // The server validates too. Show whatever it flagged against the field
-      // itself rather than as one vague line at the bottom.
+      // The server validates too, so its errors land on the field rather than the footer
       const named = FIELD_NAMES.filter((field) => fieldErrors[field]);
       named.forEach((field) => setError(field, { message: fieldErrors[field] }));
 

@@ -1,8 +1,4 @@
-/**
- * Thrown from anywhere in a controller and picked up by errorHandler, which
- * reads statusCode off it. Saves every guard from repeating the res/return
- * dance.
- */
+/** Thrown anywhere in a controller; errorHandler reads statusCode off it */
 export class HttpError extends Error {
   readonly statusCode: number;
 

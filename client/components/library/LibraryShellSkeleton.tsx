@@ -1,10 +1,6 @@
 import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
 
-/**
- * The whole screen in outline — sidebar, header and grid. Used while the
- * session is being checked and during route transitions, so the layout is
- * there from the first frame and only fills in, rather than appearing at once.
- */
+/** The whole screen in outline, so the layout is there from the first frame */
 export function LibraryShellSkeleton() {
   return (
     <div aria-hidden="true" className="flex min-h-screen">

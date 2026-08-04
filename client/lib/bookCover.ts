@@ -19,48 +19,18 @@ export const COVERS: CoverPalette[] = [
 
 export interface CoverShape {
   barWidth: string;
-  barHeight: string;
+  barHeight: number;
   barRadius: string;
-  titleSize: string;
   justify: 'flex-end' | 'center';
 }
 
+/** Measured for a grid cover; the scale prop shrinks them for smaller cards */
 export const SHAPES: CoverShape[] = [
-  {
-    barWidth: '34px',
-    barHeight: '3px',
-    barRadius: '2px',
-    titleSize: '19px',
-    justify: 'flex-end',
-  },
-  {
-    barWidth: '100%',
-    barHeight: '8px',
-    barRadius: '4px',
-    titleSize: '17px',
-    justify: 'flex-end',
-  },
-  {
-    barWidth: '22px',
-    barHeight: '22px',
-    barRadius: '50%',
-    titleSize: '20px',
-    justify: 'flex-end',
-  },
-  {
-    barWidth: '46px',
-    barHeight: '2px',
-    barRadius: '1px',
-    titleSize: '22px',
-    justify: 'center',
-  },
-  {
-    barWidth: '14px',
-    barHeight: '14px',
-    barRadius: '3px',
-    titleSize: '18px',
-    justify: 'flex-end',
-  },
+  { barWidth: '38px', barHeight: 3, barRadius: '2px', justify: 'flex-end' },
+  { barWidth: '100%', barHeight: 8, barRadius: '4px', justify: 'flex-end' },
+  { barWidth: '24px', barHeight: 24, barRadius: '50%', justify: 'flex-end' },
+  { barWidth: '52px', barHeight: 2, barRadius: '1px', justify: 'center' },
+  { barWidth: '16px', barHeight: 16, barRadius: '3px', justify: 'flex-end' },
 ];
 
 function hash(text: string): number {
@@ -75,12 +45,20 @@ export function paletteFor(cover: number): CoverPalette {
   return COVERS[cover] ?? COVERS[0];
 }
 
-/**
- * Shape is derived rather than stored — the design only ever lets a reader
- * choose the colour, and deriving keeps a book's spine stable across loads.
- */
+/** Shape is derived, not stored, so a spine looks the same on every load */
 export function shapeFor(title: string, author: string): CoverShape {
   return SHAPES[hash(`${title}|${author}`) % SHAPES.length];
+}
+
+/** Short titles set large, long ones stepping down, so a cover is never half empty */
+export function titleSizeFor(title: string): number {
+  const length = title.trim().length;
+
+  if (length <= 10) return 36;
+  if (length <= 18) return 30;
+  if (length <= 28) return 25;
+  if (length <= 42) return 21;
+  return 18;
 }
 
 /** The design prints only the author's surname across the spine. */

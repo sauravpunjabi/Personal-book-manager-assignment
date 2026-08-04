@@ -12,18 +12,10 @@
   --color-ink-2: #6b6259;
   --color-ink-3: #9c9287;
 
-  --color-accent: #c85a32;
+  --color-accent: #4a6b53;
   --color-sand: #94762f;
-  --color-sage: #5b7a58;
+  --color-sage: #2f6b4f;
   --color-danger: #a8322a;
-
-  /* Names the pre-handoff screens already use, pointed at the new palette so
-     they shift with the design instead of breaking. */
-  --color-paper: #f8f5f0;
-  --color-muted: #6b6259;
-  --color-status-want: #94762f;
-  --color-status-reading: #bd6239;
-  --color-status-done: #5b7a58;
 }
 
 @theme inline {
@@ -40,8 +32,7 @@
     0 1px 2px rgba(42, 38, 34, 0.1), 0 10px 22px -14px rgba(42, 38, 34, 0.45);
 }
 
-/* The handoff ships a dark palette. Tokens are wired up now; the toggle that
-   sets data-theme lives in the app shell and is not built yet. */
+/* Dark palette from the handoff; the toggle that sets data-theme lives in the sidebar */
 :root[data-theme='dark'] {
   --color-bg: #171512;
   --color-surface: #201d1a;
@@ -53,15 +44,9 @@
   --color-ink-2: #aca196;
   --color-ink-3: #7a7166;
 
-  --color-accent: #e06d43;
+  --color-accent: #6b8e73;
   --color-sand: #c2a05a;
-  --color-sage: #8bab84;
-
-  --color-paper: #171512;
-  --color-muted: #aca196;
-  --color-status-want: #c2a05a;
-  --color-status-reading: #d97f52;
-  --color-status-done: #8bab84;
+  --color-sage: #a8c49f;
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.7);
@@ -69,8 +54,7 @@
   --cover-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 22px -14px rgba(0, 0, 0, 0.9);
 }
 
-/* Entrance animations from the handoff. Referenced with arbitrary animate-[…]
-   utilities so the timing functions stay exactly as designed. */
+/* Entrance animations from the handoff, used via arbitrary animate-[…] utilities */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -134,8 +118,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Text fields carry their own accent ring from the design, so the generic
-   outline would double up. The ring below is the visible focus indicator. */
+/* Text fields have their own accent ring, so the generic outline would double up */
 .field:focus-visible {
   outline: none;
 }

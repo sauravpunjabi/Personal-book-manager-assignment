@@ -9,12 +9,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useFilterStore, type StatusFilter } from '@/store/filter.store';
 import { BOOK_STATUSES, type Book } from '@/types/book';
 
-/**
- * The phone stand-in for the sidebar. The design has no mobile layout, so
- * rather than cram a 236px rail onto a 375px screen the shelves become a
- * horizontally scrolling row of chips, with tags beneath and the account
- * controls folded into the same strip.
- */
+/** The phone stand-in for the sidebar, since the design has no mobile layout */
 export function MobileShelfBar({ books }: { books: Book[] }) {
   const status = useFilterStore((state) => state.status);
   const setStatus = useFilterStore((state) => state.setStatus);

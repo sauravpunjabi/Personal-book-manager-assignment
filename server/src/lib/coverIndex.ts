@@ -10,11 +10,7 @@ export function isCoverIndex(value: unknown): value is number {
   );
 }
 
-/**
- * Picks a palette from the title so the same book always lands on the same
- * colour, and a shelf added in one sitting still comes out varied. The reader
- * can override it when adding the book.
- */
+/** Picks a palette from the title so the same book always gets the same colour */
 export function pickCover(title: string): number {
   let hash = 0;
   for (let index = 0; index < title.length; index += 1) {

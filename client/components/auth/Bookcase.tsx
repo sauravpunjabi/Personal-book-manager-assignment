@@ -92,8 +92,7 @@ export function Bookcase() {
 
   useEffect(() => {
     const context = gsap.context(() => {
-      // matchMedia keeps the whole thing opt-in: with reduced motion the
-      // shelves simply exist, already in place, and hover does nothing.
+      // matchMedia keeps it opt-in: reduced motion means no entrance and no hover
       gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
         gsap.from('[data-spine]', {
           yPercent: 110,
@@ -148,8 +147,7 @@ export function Bookcase() {
                   className="relative flex items-center justify-center will-change-transform"
                   style={{ flex: `${spine.weight} 1 0%`, height: spine.height }}
                 >
-                  {/* A blurred wash of the spine's own colour — a halo, not a
-                      gradient fill, so it reads as light rather than decoration. */}
+                  {/* A blurred wash of the spine's colour, so it reads as light not decoration */}
                   <span
                     data-glow
                     className="pointer-events-none absolute -inset-4 scale-90 rounded-full opacity-0 blur-2xl"

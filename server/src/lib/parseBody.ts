@@ -1,7 +1,4 @@
-/**
- * Request bodies arrive untyped, so these read a field defensively and hand
- * back something the controller can trust.
- */
+/** Request bodies arrive untyped, so these read a field defensively */
 export function readString(body: Record<string, unknown>, field: string): string {
   const value = body[field];
   return typeof value === 'string' ? value.trim() : '';

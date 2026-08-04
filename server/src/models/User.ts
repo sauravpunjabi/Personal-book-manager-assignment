@@ -17,8 +17,7 @@ const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    // Excluded from queries by default so a stray User.find() can never leak
-    // hashes. Login opts back in with .select('+password').
+    // Excluded by default so a stray find() cannot leak hashes; login opts back in
     password: { type: String, required: true, select: false },
   },
   { timestamps: true }

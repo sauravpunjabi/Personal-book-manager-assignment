@@ -26,8 +26,7 @@ export function Input({ label, error, hint, id, className, ...props }: InputProp
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={cn(error && errorId, !error && hint && hintId) || undefined}
-        // .field carries the border, radius and accent focus ring from the
-        // design so the exact colour-mix values stay in one place.
+        // .field holds the border, radius and focus ring, so those values live in one place
         className={cn(
           'field h-11 w-full px-[14px] text-[14.5px] outline-none',
           className

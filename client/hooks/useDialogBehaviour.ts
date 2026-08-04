@@ -5,12 +5,7 @@ import { useEffect, useRef } from 'react';
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/**
- * Everything a dialog owes a keyboard user, in one place: focus moves in on
- * open and returns to whoever opened it, Tab cannot escape, Escape closes, and
- * the page behind stops scrolling. Shared by the centred modal and the drawer
- * so neither can drift out of step with the other.
- */
+/** Focus trap, focus restore, Escape and scroll lock, shared by modal and drawer */
 export function useDialogBehaviour(isOpen: boolean, onClose: () => void) {
   const panelRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);

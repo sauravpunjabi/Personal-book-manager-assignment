@@ -30,8 +30,7 @@ export default function AuthPage() {
 
   return (
     <div className="grid min-h-screen animate-[fadeIn_.5s_ease_both] lg:grid-cols-[1.05fr_.95fr]">
-      {/* Decorative column. Dropped entirely below lg so phones get the form
-          without scrolling past a half-metre of shelf first. */}
+      {/* Decorative, and dropped below lg so phones reach the form without scrolling */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-[color-mix(in_oklab,var(--color-accent)_9%,var(--color-surface))] px-[52px] pt-11 lg:flex">
         <Wordmark />
 
@@ -91,9 +90,9 @@ function Wordmark() {
   return (
     <div className="flex items-center gap-[11px]">
       <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-[#fffdfa]">
-        B
+        C
       </span>
-      <span className="text-[14.5px] font-medium tracking-[-0.01em]">Bookmark</span>
+      <span className="text-[14.5px] font-medium tracking-[-0.01em]">Chapter</span>
     </div>
   );
 }

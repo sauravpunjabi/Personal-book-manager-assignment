@@ -32,8 +32,7 @@ const bookSchema = new Schema<IBook>(
     status: { type: String, enum: BOOK_STATUSES, default: 'want-to-read' },
     // Index into the design's cover palette. Covers are drawn, not fetched.
     cover: { type: Number, default: 0, min: 0, max: COVER_COUNT - 1 },
-    // Zero pages means the reader has not said how long the book is, and the
-    // progress bar stays hidden rather than showing a meaningless 0%.
+    // Zero pages means unknown, which hides the progress bar instead of showing 0%
     pages: { type: Number, default: 0, min: 0 },
     currentPage: { type: Number, default: 0, min: 0 },
     note: { type: String, default: '', trim: true, maxlength: 500 },
@@ -42,8 +41,7 @@ const bookSchema = new Schema<IBook>(
   { timestamps: true }
 );
 
-// "Fiction", " fiction " and "FICTION" are the same tag as far as a reader is
-// concerned, so they get folded together before they ever reach the database.
+// Fiction and fiction are the same tag to a reader, so they fold together on save
 bookSchema.pre('save', function () {
   if (!this.isModified('tags')) {
     return;
@@ -53,8 +51,7 @@ bookSchema.pre('save', function () {
   this.tags = [...new Set(cleaned)];
 });
 
-// Every query is scoped to one owner and then narrowed by status or tag, so
-// both indexes lead with owner.
+// Every query is scoped to an owner first, so both indexes lead with owner
 bookSchema.index({ owner: 1, status: 1 });
 bookSchema.index({ owner: 1, tags: 1 });
 

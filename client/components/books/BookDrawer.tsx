@@ -90,7 +90,7 @@ export function BookDrawer({
 
             <div className="flex-1 overflow-y-auto px-6 pt-7 pb-6">
               <div className="flex items-start gap-5">
-                <BookCover book={book} className="w-[124px] flex-none" />
+                <BookCover book={book} scale={0.68} className="w-[124px] flex-none" />
                 <div className="min-w-0">
                   <h2
                     id={titleId}

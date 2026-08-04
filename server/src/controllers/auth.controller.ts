@@ -70,8 +70,7 @@ export async function login(
       return;
     }
 
-    // Same response whether the email is unknown or the password is wrong —
-    // telling them apart would let anyone probe for registered addresses.
+    // Same answer either way, so the form cannot be used to find registered emails
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.comparePassword(password))) {

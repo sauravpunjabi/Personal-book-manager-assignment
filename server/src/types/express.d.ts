@@ -1,7 +1,4 @@
-/**
- * The auth middleware attaches the authenticated user's id to the request.
- * Declaring it here keeps controllers free of casts when they read req.user.
- */
+/** Lets controllers read req.user without reaching for a cast */
 declare global {
   namespace Express {
     interface Request {

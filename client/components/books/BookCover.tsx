@@ -1,4 +1,4 @@
-import { paletteFor, shapeFor, surnameOf } from '@/lib/bookCover';
+import { paletteFor, shapeFor, surnameOf, titleSizeFor } from '@/lib/bookCover';
 import { cn } from '@/lib/utils';
 import type { Book } from '@/types/book';
 
@@ -8,54 +8,66 @@ interface BookCoverProps {
   book: CoverBook;
   /** 'full' prints the title and author; 'thumb' is the bar-only treatment. */
   variant?: 'full' | 'thumb';
+  /** Multiplier for type and spacing, for covers smaller than the grid's. */
+  scale?: number;
   className?: string;
 }
 
-/**
- * Covers are drawn, never fetched. Colour comes from the book, shape from its
- * title, so every spine is stable and no network request can leave a hole in
- * the shelf.
- */
-export function BookCover({ book, variant = 'full', className }: BookCoverProps) {
+/** Covers are drawn, never fetched, so nothing can leave a hole in the shelf */
+export function BookCover({
+  book,
+  variant = 'full',
+  scale = 1,
+  className,
+}: BookCoverProps) {
   const palette = paletteFor(book.cover);
   const shape = shapeFor(book.title, book.author);
+  const isFull = variant === 'full';
+
+  const barWidth = shape.barWidth.endsWith('%')
+    ? shape.barWidth
+    : `${parseFloat(shape.barWidth) * scale}px`;
 
   return (
     <div
       aria-hidden="true"
       className={cn(
-        'relative flex aspect-2/3 flex-col overflow-hidden shadow-[var(--cover-shadow)]',
-        variant === 'full'
-          ? 'rounded-[10px] px-4 py-[18px]'
-          : 'justify-end rounded-[5px] p-1.5',
+        'relative flex aspect-2/3 flex-col overflow-hidden',
+        isFull
+          ? 'rounded-[10px] shadow-[var(--cover-shadow)]'
+          : 'justify-end rounded-[5px] p-1.5 shadow-[var(--shadow-1)]',
         className
       )}
       style={{
         background: palette.bg,
         color: palette.fg,
-        justifyContent: variant === 'full' ? shape.justify : undefined,
+        justifyContent: isFull ? shape.justify : undefined,
+        padding: isFull ? `${20 * scale}px ${17 * scale}px` : undefined,
       }}
     >
       <div
         className="flex-none"
         style={{
-          width: variant === 'full' ? shape.barWidth : '60%',
-          height: variant === 'full' ? shape.barHeight : '3px',
-          borderRadius: variant === 'full' ? shape.barRadius : '2px',
+          width: isFull ? barWidth : '60%',
+          height: isFull ? shape.barHeight * scale : 3,
+          borderRadius: isFull ? shape.barRadius : '2px',
           background: palette.accent,
-          marginBottom: variant === 'full' ? 16 : 0,
+          marginBottom: isFull ? 16 * scale : 0,
         }}
       />
 
-      {variant === 'full' && (
+      {isFull && (
         <>
           <p
-            className="font-display leading-[1.1] tracking-[-0.012em]"
-            style={{ fontSize: shape.titleSize }}
+            className="line-clamp-5 font-display leading-[1.05] tracking-[-0.015em] text-balance"
+            style={{ fontSize: titleSizeFor(book.title) * scale }}
           >
             {book.title}
           </p>
-          <p className="mt-2.5 text-[9px] tracking-[0.16em] uppercase opacity-70">
+          <p
+            className="truncate tracking-[0.16em] uppercase opacity-70"
+            style={{ fontSize: 9.5 * scale, marginTop: 10 * scale }}
+          >
             {surnameOf(book.author)}
           </p>
         </>

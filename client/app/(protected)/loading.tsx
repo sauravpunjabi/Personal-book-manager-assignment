@@ -1,7 +1,6 @@
 import { LibraryShellSkeleton } from '@/components/library/LibraryShellSkeleton';
 
-// Streamed by Next while the route segment loads, so a slow connection sees
-// the layout immediately instead of a blank page.
+// Streamed while the route loads, so a slow connection still sees the layout
 export default function Loading() {
   return <LibraryShellSkeleton />;
 }

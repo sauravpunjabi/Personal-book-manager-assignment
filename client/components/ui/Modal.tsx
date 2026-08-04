@@ -27,9 +27,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const duration = reduceMotion ? 0 : 0.18;
 
   return createPortal(
-    // The direct child of AnimatePresence has to be a motion component with a
-    // key — a plain wrapper never registers an exit, and the overlay is left
-    // mounted after closing.
+    // AnimatePresence needs a keyed motion child or the overlay never unmounts
     <AnimatePresence>
       {isOpen && (
         <motion.div
