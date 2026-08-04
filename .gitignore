@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+# builds
+.next/
+out/
+dist/
+build/
+
+# environment — the .example files are meant to be committed, real secrets never are
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# logs
+*.log
+npm-debug.log*
+
+# editors and OS noise
+.DS_Store
+.idea/
+.vscode/
+
+# misc
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+.claude/
+context.md
