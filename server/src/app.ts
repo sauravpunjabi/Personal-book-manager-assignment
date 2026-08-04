@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import authRoutes from './routes/auth.routes';
+import bookRoutes from './routes/book.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFound';
 
@@ -26,6 +27,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { clearAuthCookie, setAuthCookie } from '../lib/authCookie';
 import { signToken } from '../lib/jwt';
+import { readString } from '../lib/parseBody';
 import { IUser, User } from '../models/User';
 
 const MIN_NAME_LENGTH = 2;
@@ -8,11 +9,6 @@ const MIN_PASSWORD_LENGTH = 8;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type FieldErrors = Record<string, string>;
-
-function readString(body: Record<string, unknown>, field: string): string {
-  const value = body[field];
-  return typeof value === 'string' ? value.trim() : '';
-}
 
 function publicUser(user: IUser) {
   return { _id: user._id.toString(), name: user.name, email: user.email };
