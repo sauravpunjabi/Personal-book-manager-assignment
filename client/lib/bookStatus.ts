@@ -6,6 +6,18 @@ export const STATUS_LABELS: Record<BookStatus, string> = {
   completed: 'Completed',
 };
 
+/** The design gives each shelf its own colour: sand, accent, sage. */
+export const STATUS_COLORS: Record<BookStatus, string> = {
+  'want-to-read': 'var(--color-sand)',
+  reading: 'var(--color-accent)',
+  completed: 'var(--color-sage)',
+};
+
+/** Softened against the surface for pill backgrounds. */
+export function statusTint(status: BookStatus): string {
+  return `color-mix(in oklab, ${STATUS_COLORS[status]} 13%, var(--color-surface))`;
+}
+
 /** Order matters here — this is the loop the card's status badge walks through. */
 export function nextStatus(current: BookStatus): BookStatus {
   const index = BOOK_STATUSES.indexOf(current);

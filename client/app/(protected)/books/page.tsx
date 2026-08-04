@@ -1,27 +1,26 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { BookCard } from '@/components/books/BookCard';
 import { BookForm } from '@/components/books/BookForm';
 import { DeleteModal } from '@/components/books/DeleteModal';
-import { EmptyState } from '@/components/books/EmptyState';
-import { FilterPanel } from '@/components/books/FilterPanel';
-import { SkeletonCard } from '@/components/books/SkeletonCard';
+import { BookGrid } from '@/components/library/BookGrid';
+import { BookListView } from '@/components/library/BookListView';
+import { EmptyLibrary, EmptyResults } from '@/components/library/LibraryEmpty';
+import { LibraryHeader } from '@/components/library/LibraryHeader';
+import { LibrarySidebar } from '@/components/library/LibrarySidebar';
+import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { getApiError } from '@/lib/apiError';
+import { surnameOf } from '@/lib/bookCover';
 import * as booksService from '@/lib/services/books.service';
+import { useAuthStore } from '@/store/auth.store';
 import { useFilterStore } from '@/store/filter.store';
 import type { Book, BookStatus, CreateBookInput } from '@/types/book';
 
-const SKELETON_COUNT = 6;
-
-export default function BooksPage() {
-  const reduceMotion = useReducedMotion();
-  const status = useFilterStore((state) => state.status);
-  const tags = useFilterStore((state) => state.tags);
-  const clearFilters = useFilterStore((state) => state.clearFilters);
+export default function LibraryPage() {
+  const user = useAuthStore((state) => state.user);
+  const { status, tag, query, sort, view, clearFilters } = useFilterStore();
 
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,42 +35,60 @@ export default function BooksPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
-  const tagKey = tags.join(',');
-
   const loadBooks = useCallback(async () => {
     setIsLoading(true);
     setLoadError('');
 
     try {
-      setBooks(
-        await booksService.getBooks({
-          ...(status === 'all' ? {} : { status }),
-          ...(tagKey ? { tags: tagKey.split(',') } : {}),
-        })
-      );
+      setBooks(await booksService.getBooks());
     } catch (error) {
       setLoadError(getApiError(error).message);
     } finally {
       setIsLoading(false);
     }
-  }, [status, tagKey]);
+  }, []);
 
   useEffect(() => {
     void loadBooks();
   }, [loadBooks]);
 
-  const availableTags = useMemo(
-    () => [...new Set(books.flatMap((book) => book.tags))].sort(),
-    [books]
-  );
+  // Filtering happens here rather than on the server because the sidebar needs
+  // counts across every shelf at the same time as the grid shows one of them —
+  // a filtered response cannot answer both. The API still supports filtering.
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
 
-  function openAddForm() {
+    const matched = books.filter((book) => {
+      if (status !== 'all' && book.status !== status) {
+        return false;
+      }
+      if (tag && !book.tags.includes(tag)) {
+        return false;
+      }
+      if (needle) {
+        const haystack = `${book.title} ${book.author} ${book.tags.join(' ')}`;
+        return haystack.toLowerCase().includes(needle);
+      }
+      return true;
+    });
+
+    const order = {
+      recent: (a: Book, b: Book) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+      title: (a: Book, b: Book) => a.title.localeCompare(b.title),
+      author: (a: Book, b: Book) =>
+        surnameOf(a.author).localeCompare(surnameOf(b.author)),
+    };
+
+    return [...matched].sort(order[sort]);
+  }, [books, status, tag, query, sort]);
+
+  function openAdd() {
     setEditing(null);
     setFormError('');
     setIsFormOpen(true);
   }
 
-  function openEditForm(book: Book) {
+  function openEdit(book: Book) {
     setEditing(book);
     setFormError('');
     setIsFormOpen(true);
@@ -130,6 +147,7 @@ export default function BooksPage() {
       await booksService.deleteBook(pendingDelete._id);
       setBooks((current) => current.filter((book) => book._id !== pendingDelete._id));
       setPendingDelete(null);
+      setIsFormOpen(false);
     } catch (error) {
       setDeleteError(getApiError(error).message);
     } finally {
@@ -137,83 +155,78 @@ export default function BooksPage() {
     }
   }
 
-  const isFiltered = status !== 'all' || tags.length > 0;
+  const isFiltered = status !== 'all' || tag !== null || query.trim() !== '';
+  const echo = query.trim() ? `“${query.trim()}”` : tag ? `“${tag}”` : 'that shelf';
 
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduceMotion ? 0 : 0.25 }}
-      className="mx-auto max-w-5xl space-y-6"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-display text-3xl font-semibold">My books</h1>
-        <Button onClick={openAddForm}>Add book</Button>
+    <div className="flex min-h-screen animate-[fadeIn_.45s_ease_both]">
+      <div className="hidden md:block">
+        <LibrarySidebar books={books} />
       </div>
 
-      <FilterPanel availableTags={availableTags} />
+      <main className="flex min-w-0 flex-1 flex-col">
+        <LibraryHeader books={books} name={user?.name} onAdd={openAdd} />
 
-      {isLoading && (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: SKELETON_COUNT }, (_, index) => (
-            <li key={index}>
-              <SkeletonCard />
-            </li>
-          ))}
-        </ul>
-      )}
+        <div className="flex flex-wrap items-center gap-3 px-5 pt-5 pb-3 sm:px-10">
+          <p className="flex-1 text-[13px] text-ink-2">
+            {visible.length
+              ? `${visible.length} ${visible.length === 1 ? 'book' : 'books'} ${
+                  isFiltered ? 'on this shelf' : 'in your library'
+                }`
+              : ''}
+          </p>
 
-      {!isLoading && loadError && (
-        <div className="rounded-lg border border-line bg-surface p-8 text-center">
-          <p className="text-sm text-danger">{loadError}</p>
-          <Button variant="secondary" className="mt-4" onClick={() => void loadBooks()}>
-            Try again
-          </Button>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[12.5px] text-accent hover:underline hover:underline-offset-[3px]"
+            >
+              Clear filters
+            </button>
+          )}
+
+          <SortControl />
         </div>
-      )}
 
-      {!isLoading && !loadError && books.length === 0 && (
-        <EmptyState
-          variant={isFiltered ? 'no-results' : 'no-books'}
-          onAction={isFiltered ? clearFilters : openAddForm}
-        />
-      )}
+        <section className="flex-1 px-5 pt-3 pb-[72px] sm:px-10">
+          {isLoading && <LibrarySkeleton />}
 
-      {!isLoading && !loadError && books.length > 0 && (
-        <motion.ul
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.04 } },
-          }}
-        >
-          <AnimatePresence mode="popLayout">
-            {books.map((book) => (
-              <motion.div
-                key={book._id}
-                variants={{
-                  hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
-                transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                className="contents"
+          {!isLoading && loadError && (
+            <div className="rounded-[14px] border border-line bg-surface p-8 text-center">
+              <p className="text-[13.5px] text-danger">{loadError}</p>
+              <Button
+                variant="secondary"
+                className="mt-4"
+                onClick={() => void loadBooks()}
               >
-                <BookCard
-                  book={book}
-                  onEdit={openEditForm}
-                  onDelete={(target) => {
-                    setDeleteError('');
-                    setPendingDelete(target);
-                  }}
-                  onStatusChange={changeStatus}
-                />
-              </motion.div>
+                Try again
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && !loadError && books.length === 0 && (
+            <EmptyLibrary onAdd={openAdd} />
+          )}
+
+          {!isLoading && !loadError && books.length > 0 && visible.length === 0 && (
+            <EmptyResults echo={echo} onClear={clearFilters} />
+          )}
+
+          {!isLoading &&
+            !loadError &&
+            visible.length > 0 &&
+            (view === 'grid' ? (
+              <BookGrid books={visible} onOpen={openEdit} onStatusChange={changeStatus} />
+            ) : (
+              <BookListView
+                books={visible}
+                onOpen={openEdit}
+                onStatusChange={changeStatus}
+              />
             ))}
-          </AnimatePresence>
-        </motion.ul>
-      )}
+        </section>
+      </main>
 
       <Modal
         isOpen={isFormOpen}
@@ -227,6 +240,7 @@ export default function BooksPage() {
           error={formError}
           onSubmit={saveBook}
           onCancel={() => setIsFormOpen(false)}
+          onDelete={editing ? () => setPendingDelete(editing) : undefined}
         />
       </Modal>
 
@@ -238,6 +252,26 @@ export default function BooksPage() {
         onConfirm={confirmDelete}
         onCancel={() => setPendingDelete(null)}
       />
-    </motion.div>
+    </div>
+  );
+}
+
+function SortControl() {
+  const sort = useFilterStore((state) => state.sort);
+  const setSort = useFilterStore((state) => state.setSort);
+
+  return (
+    <label className="flex items-center gap-2 text-[12.5px] text-ink-3">
+      Sort
+      <select
+        value={sort}
+        onChange={(event) => setSort(event.target.value as typeof sort)}
+        className="h-8 cursor-pointer rounded-[9px] border border-line bg-surface px-2 text-[12.5px] text-ink outline-none"
+      >
+        <option value="recent">Recently added</option>
+        <option value="title">Title A–Z</option>
+        <option value="author">Author A–Z</option>
+      </select>
+    </label>
   );
 }

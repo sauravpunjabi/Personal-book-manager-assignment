@@ -1,14 +1,19 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CoverPicker } from '@/components/books/CoverPicker';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { STATUS_LABELS } from '@/lib/bookStatus';
-import { BOOK_STATUSES, type Book, type CreateBookInput } from '@/types/book';
+import { STATUS_COLORS, STATUS_LABELS, statusTint } from '@/lib/bookStatus';
+import {
+  BOOK_STATUSES,
+  type Book,
+  type BookStatus,
+  type CreateBookInput,
+} from '@/types/book';
 
 const bookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
@@ -25,6 +30,7 @@ interface BookFormProps {
   error?: string;
   onSubmit: (input: CreateBookInput) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 export function BookForm({
@@ -33,14 +39,15 @@ export function BookForm({
   error,
   onSubmit,
   onCancel,
+  onDelete,
 }: BookFormProps) {
-  const statusId = useId();
   const [cover, setCover] = useState(initialData?.cover ?? 0);
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
@@ -52,9 +59,10 @@ export function BookForm({
     },
   });
 
-  // Watched so the cover preview updates as the title and author are typed.
-  const previewTitle = useWatch({ control, name: 'title' });
-  const previewAuthor = useWatch({ control, name: 'author' });
+  // Watched so the cover preview and status pills track what is typed.
+  const title = useWatch({ control, name: 'title' });
+  const author = useWatch({ control, name: 'author' });
+  const status = useWatch({ control, name: 'status' });
 
   function submit(values: BookFormValues) {
     onSubmit({
@@ -70,67 +78,109 @@ export function BookForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} noValidate className="space-y-5">
-      <CoverPicker
-        title={previewTitle}
-        author={previewAuthor}
-        cover={cover}
-        onChange={setCover}
-      />
+    <form onSubmit={handleSubmit(submit)} noValidate>
+      <div className="flex flex-col gap-[22px] sm:flex-row">
+        <CoverPicker title={title} author={author} cover={cover} onChange={setCover} />
 
-      <Input
-        label="Title"
-        autoFocus
-        placeholder="The Left Hand of Darkness"
-        error={errors.title?.message}
-        {...register('title')}
-      />
+        <div className="flex min-w-0 flex-1 flex-col gap-[15px]">
+          <Input
+            label="Title"
+            autoFocus
+            placeholder="The book's title"
+            error={errors.title?.message}
+            {...register('title')}
+          />
 
-      <Input
-        label="Author"
-        placeholder="Ursula K. Le Guin"
-        error={errors.author?.message}
-        {...register('author')}
-      />
+          <Input
+            label="Author"
+            placeholder="Who wrote it"
+            error={errors.author?.message}
+            {...register('author')}
+          />
 
-      <Input
-        label="Tags"
-        placeholder="fiction, sci-fi"
-        error={errors.tags?.message}
-        {...register('tags')}
-      />
+          <Input
+            label="Tags"
+            placeholder="Fiction, Comfort reads"
+            hint="Separate with commas"
+            error={errors.tags?.message}
+            {...register('tags')}
+          />
 
-      <div className="space-y-1.5">
-        <label htmlFor={statusId} className="block text-sm font-medium">
-          Status
-        </label>
-        <select
-          id={statusId}
-          className="h-11 w-full rounded-md border border-line bg-surface px-3 text-ink"
-          {...register('status')}
-        >
-          {BOOK_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {STATUS_LABELS[status]}
-            </option>
-          ))}
-        </select>
+          <fieldset className="flex flex-col gap-[9px]">
+            <legend className="text-[11.5px] tracking-[0.08em] text-ink-3 uppercase">
+              Reading status
+            </legend>
+            <input type="hidden" {...register('status')} />
+            <div className="flex flex-wrap gap-[7px]">
+              {BOOK_STATUSES.map((choice) => (
+                <StatusChoice
+                  key={choice}
+                  status={choice}
+                  isActive={status === choice}
+                  onPick={() => setValue('status', choice, { shouldDirty: true })}
+                />
+              ))}
+            </div>
+          </fieldset>
+        </div>
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="mt-5 text-[12.5px] text-danger">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="mt-[22px] flex items-center gap-2.5">
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="h-[42px] rounded-[12px] px-3 text-[13.5px] text-ink-3 transition-colors hover:bg-[color-mix(in_oklab,var(--color-accent)_10%,var(--color-surface))] hover:text-accent"
+          >
+            Remove
+          </button>
+        )}
+        <div className="flex-1" />
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" isLoading={isSubmitting}>
-          {initialData ? 'Save changes' : 'Add book'}
+          {initialData ? 'Save changes' : 'Add to shelf'}
         </Button>
       </div>
     </form>
+  );
+}
+
+function StatusChoice({
+  status,
+  isActive,
+  onPick,
+}: {
+  status: BookStatus;
+  isActive: boolean;
+  onPick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      aria-pressed={isActive}
+      className="flex h-[34px] items-center gap-[7px] rounded-full border px-[13px] text-[12.5px] transition-colors hover:border-ink-3"
+      style={{
+        background: isActive ? statusTint(status) : 'transparent',
+        color: isActive ? STATUS_COLORS[status] : 'var(--color-ink-2)',
+        borderColor: isActive
+          ? `color-mix(in oklab, ${STATUS_COLORS[status]} 40%, var(--color-surface))`
+          : 'var(--color-line)',
+      }}
+    >
+      <span
+        className="size-[5px] rounded-full"
+        style={{ background: STATUS_COLORS[status] }}
+      />
+      {STATUS_LABELS[status]}
+    </button>
   );
 }

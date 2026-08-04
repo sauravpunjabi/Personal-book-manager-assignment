@@ -2,27 +2,37 @@ import { create } from 'zustand';
 import type { BookStatus } from '@/types/book';
 
 export type StatusFilter = BookStatus | 'all';
+export type SortOrder = 'recent' | 'title' | 'author';
+export type ViewMode = 'grid' | 'list';
 
 interface FilterState {
   status: StatusFilter;
-  tags: string[];
+  tag: string | null;
+  query: string;
+  sort: SortOrder;
+  view: ViewMode;
   setStatus: (status: StatusFilter) => void;
   toggleTag: (tag: string) => void;
+  setQuery: (query: string) => void;
+  setSort: (sort: SortOrder) => void;
+  setView: (view: ViewMode) => void;
   clearFilters: () => void;
 }
 
 export const useFilterStore = create<FilterState>((set) => ({
   status: 'all',
-  tags: [],
+  tag: null,
+  query: '',
+  sort: 'recent',
+  view: 'grid',
 
   setStatus: (status) => set({ status }),
+  // One tag at a time, as the design has it — clicking the active tag clears it.
+  toggleTag: (tag) => set((state) => ({ tag: state.tag === tag ? null : tag })),
+  setQuery: (query) => set({ query }),
+  setSort: (sort) => set({ sort }),
+  setView: (view) => set({ view }),
 
-  toggleTag: (tag) =>
-    set((state) => ({
-      tags: state.tags.includes(tag)
-        ? state.tags.filter((existing) => existing !== tag)
-        : [...state.tags, tag],
-    })),
-
-  clearFilters: () => set({ status: 'all', tags: [] }),
+  // View and sort are preferences, not filters, so they survive a clear.
+  clearFilters: () => set({ status: 'all', tag: null, query: '' }),
 }));

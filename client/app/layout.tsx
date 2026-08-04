@@ -1,16 +1,25 @@
 import type { Metadata } from 'next';
-import { DM_Sans, Newsreader } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-// Both fonts come from the design handoff: Newsreader for anything that reads
-// like prose, DM Sans for the interface itself.
-const newsreader = Newsreader({
-  variable: '--font-newsreader',
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
+/**
+ * Libertinus Serif carries the headings. It is served from Google Fonts but
+ * missing from this Next version's font list, so the files are vendored and
+ * loaded locally — which also means no request to a third party at runtime.
+ */
+const libertinus = localFont({
+  variable: '--font-libertinus',
   display: 'swap',
+  src: [
+    { path: './fonts/LibertinusSerif-Regular.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/LibertinusSerif-Italic.woff2', weight: '400', style: 'italic' },
+    { path: './fonts/LibertinusSerif-SemiBold.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/LibertinusSerif-Bold.woff2', weight: '700', style: 'normal' },
+  ],
 });
 
+// DM Sans stays on everything that is interface rather than heading.
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
   subsets: ['latin'],
@@ -30,7 +39,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${newsreader.variable} ${dmSans.variable} antialiased`}>
+      <head>
+        {/* Applies the saved theme before first paint so dark-mode readers
+            never get a flash of the light palette. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('bookmark-theme');if(t==='dark')document.documentElement.dataset.theme='dark'}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className={`${libertinus.variable} ${dmSans.variable} antialiased`}>
         {children}
       </body>
     </html>
