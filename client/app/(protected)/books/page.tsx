@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BookDrawer } from '@/components/books/BookDrawer';
 import { BookForm } from '@/components/books/BookForm';
 import { DeleteModal } from '@/components/books/DeleteModal';
 import { BookGrid } from '@/components/library/BookGrid';
@@ -9,6 +10,8 @@ import { EmptyLibrary, EmptyResults } from '@/components/library/LibraryEmpty';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
 import { LibrarySidebar } from '@/components/library/LibrarySidebar';
 import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
+import { MobileShelfBar } from '@/components/library/MobileShelfBar';
+import { Toast } from '@/components/library/Toast';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { getApiError } from '@/lib/apiError';
@@ -18,6 +21,10 @@ import { useAuthStore } from '@/store/auth.store';
 import { useFilterStore } from '@/store/filter.store';
 import type { Book, BookStatus, CreateBookInput } from '@/types/book';
 
+// Long enough to notice the toast and react. The design's 3.2s is fine for a
+// message that only informs; this one gates something irreversible.
+const UNDO_WINDOW_MS = 5000;
+
 export default function LibraryPage() {
   const user = useAuthStore((state) => state.user);
   const { status, tag, query, sort, view, clearFilters } = useFilterStore();
@@ -26,14 +33,20 @@ export default function LibraryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Book | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
   const [pendingDelete, setPendingDelete] = useState<Book | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
+  const [removed, setRemoved] = useState<Book | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // The book awaiting permanent deletion, held in a ref so the timer and the
+  // unmount cleanup always see the current value rather than a stale closure.
+  const removedRef = useRef<Book | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadBooks = useCallback(async () => {
     setIsLoading(true);
@@ -82,6 +95,13 @@ export default function LibraryPage() {
     return [...matched].sort(order[sort]);
   }, [books, status, tag, query, sort]);
 
+  // Looked up rather than stored, so the drawer always shows the current book
+  // — a status change made inside it is reflected straight away.
+  const detail = useMemo(
+    () => books.find((book) => book._id === detailId) ?? null,
+    [books, detailId]
+  );
+
   function openAdd() {
     setEditing(null);
     setFormError('');
@@ -89,6 +109,7 @@ export default function LibraryPage() {
   }
 
   function openEdit(book: Book) {
+    setDetailId(null);
     setEditing(book);
     setFormError('');
     setIsFormOpen(true);
@@ -135,24 +156,73 @@ export default function LibraryPage() {
     }
   }
 
-  async function confirmDelete() {
+  /**
+   * Sends the delete the server actually acts on. Called when the undo window
+   * closes, when another book is removed, or on the way out of the page.
+   */
+  const commitRemoval = useCallback(() => {
+    const book = removedRef.current;
+
+    if (!book) {
+      return;
+    }
+
+    removedRef.current = null;
+    setRemoved(null);
+
+    if (undoTimer.current) {
+      clearTimeout(undoTimer.current);
+      undoTimer.current = null;
+    }
+
+    void booksService.deleteBook(book._id).catch((error) => {
+      // Put it back — as far as the reader is concerned it never left.
+      setBooks((current) => [book, ...current]);
+      setToastMessage(`Could not remove “${book.title}”. ${getApiError(error).message}`);
+    });
+  }, []);
+
+  function startRemoval(book: Book) {
+    commitRemoval();
+
+    removedRef.current = book;
+    setRemoved(book);
+    setToastMessage('');
+    setBooks((current) => current.filter((entry) => entry._id !== book._id));
+
+    undoTimer.current = setTimeout(commitRemoval, UNDO_WINDOW_MS);
+  }
+
+  function undoRemoval() {
+    const book = removedRef.current;
+
+    if (!book) {
+      return;
+    }
+
+    if (undoTimer.current) {
+      clearTimeout(undoTimer.current);
+      undoTimer.current = null;
+    }
+
+    removedRef.current = null;
+    setRemoved(null);
+    setBooks((current) => [book, ...current]);
+  }
+
+  // Leaving the page commits immediately. Without this a pending delete would
+  // simply be forgotten and the book would reappear on the next visit.
+  useEffect(() => commitRemoval, [commitRemoval]);
+
+  function confirmDelete() {
     if (!pendingDelete) {
       return;
     }
 
-    setIsDeleting(true);
-    setDeleteError('');
-
-    try {
-      await booksService.deleteBook(pendingDelete._id);
-      setBooks((current) => current.filter((book) => book._id !== pendingDelete._id));
-      setPendingDelete(null);
-      setIsFormOpen(false);
-    } catch (error) {
-      setDeleteError(getApiError(error).message);
-    } finally {
-      setIsDeleting(false);
-    }
+    startRemoval(pendingDelete);
+    setPendingDelete(null);
+    setIsFormOpen(false);
+    setDetailId(null);
   }
 
   const isFiltered = status !== 'all' || tag !== null || query.trim() !== '';
@@ -166,6 +236,8 @@ export default function LibraryPage() {
 
       <main className="flex min-w-0 flex-1 flex-col">
         <LibraryHeader books={books} name={user?.name} onAdd={openAdd} />
+
+        <MobileShelfBar books={books} />
 
         <div className="flex flex-wrap items-center gap-3 px-5 pt-5 pb-3 sm:px-10">
           <p className="flex-1 text-[13px] text-ink-2">
@@ -217,11 +289,15 @@ export default function LibraryPage() {
             !loadError &&
             visible.length > 0 &&
             (view === 'grid' ? (
-              <BookGrid books={visible} onOpen={openEdit} onStatusChange={changeStatus} />
+              <BookGrid
+                books={visible}
+                onOpen={(book) => setDetailId(book._id)}
+                onStatusChange={changeStatus}
+              />
             ) : (
               <BookListView
                 books={visible}
-                onOpen={openEdit}
+                onOpen={(book) => setDetailId(book._id)}
                 onStatusChange={changeStatus}
               />
             ))}
@@ -247,11 +323,26 @@ export default function LibraryPage() {
       <DeleteModal
         isOpen={pendingDelete !== null}
         bookTitle={pendingDelete?.title ?? ''}
-        isDeleting={isDeleting}
-        error={deleteError}
         onConfirm={confirmDelete}
         onCancel={() => setPendingDelete(null)}
       />
+
+      <BookDrawer
+        book={detail}
+        onClose={() => setDetailId(null)}
+        onStatusChange={changeStatus}
+        onEdit={openEdit}
+        onDelete={setPendingDelete}
+      />
+
+      {removed && (
+        <Toast
+          message={`“${removed.title}” removed`}
+          action={{ label: 'Undo', onClick: undoRemoval }}
+        />
+      )}
+
+      {!removed && toastMessage && <Toast message={toastMessage} />}
     </div>
   );
 }

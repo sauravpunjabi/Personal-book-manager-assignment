@@ -6,39 +6,33 @@ import { Modal } from '@/components/ui/Modal';
 interface DeleteModalProps {
   isOpen: boolean;
   bookTitle: string;
-  isDeleting: boolean;
-  error?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
+/**
+ * No loading state here — confirming only queues the removal, and the undo
+ * toast on the page is what covers the window before it becomes permanent.
+ */
 export function DeleteModal({
   isOpen,
   bookTitle,
-  isDeleting,
-  error,
   onConfirm,
   onCancel,
 }: DeleteModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onCancel} title="Delete this book?">
-      <p className="text-sm text-muted">
-        <span className="font-medium text-ink">{bookTitle}</span> will be removed from
-        your shelf. This cannot be undone.
+    <Modal isOpen={isOpen} onClose={onCancel} title="Remove this book?">
+      <p className="text-[13.5px] leading-[1.6] text-ink-2">
+        <span className="font-medium text-ink">{bookTitle}</span> comes off your shelf.
+        You will have a moment to undo it.
       </p>
 
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-danger">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex justify-end gap-2.5">
         <Button variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button variant="danger" isLoading={isDeleting} onClick={onConfirm}>
-          Delete
+        <Button variant="danger" onClick={onConfirm}>
+          Remove
         </Button>
       </div>
     </Modal>

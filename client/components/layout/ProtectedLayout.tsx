@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { LibraryShellSkeleton } from '@/components/library/LibraryShellSkeleton';
 import { useAuthStore } from '@/store/auth.store';
 
 export function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -20,16 +21,14 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  // Showing the shell rather than a spinner means the session check and the
+  // book fetch read as one continuous load instead of two separate flashes.
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="font-display text-lg text-muted">Finding your shelf…</p>
-      </div>
-    );
+    return <LibraryShellSkeleton />;
   }
 
   // Nothing renders during the redirect — showing the page first would leak a
-  // flash of someone else's dashboard.
+  // flash of someone else's library.
   if (!isAuthenticated) {
     return null;
   }

@@ -16,6 +16,9 @@ export interface IBook extends Document {
   tags: string[];
   status: BookStatus;
   cover: number;
+  pages: number;
+  currentPage: number;
+  note: string;
   owner: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +32,11 @@ const bookSchema = new Schema<IBook>(
     status: { type: String, enum: BOOK_STATUSES, default: 'want-to-read' },
     // Index into the design's cover palette. Covers are drawn, not fetched.
     cover: { type: Number, default: 0, min: 0, max: COVER_COUNT - 1 },
+    // Zero pages means the reader has not said how long the book is, and the
+    // progress bar stays hidden rather than showing a meaningless 0%.
+    pages: { type: Number, default: 0, min: 0 },
+    currentPage: { type: Number, default: 0, min: 0 },
+    note: { type: String, default: '', trim: true, maxlength: 500 },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   },
   { timestamps: true }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,11 +15,20 @@ import {
   type CreateBookInput,
 } from '@/types/book';
 
+// Page counts arrive as strings from number inputs, so they are coerced and
+// bounded here rather than trusted.
+const pageCount = z
+  .string()
+  .refine((value) => value === '' || /^\d{1,5}$/.test(value), 'Use a whole number');
+
 const bookSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   author: z.string().trim().min(1, 'Author is required'),
   tags: z.string(),
   status: z.enum(BOOK_STATUSES),
+  pages: pageCount,
+  currentPage: pageCount,
+  note: z.string().max(500, 'Keep it under 500 characters'),
 });
 
 type BookFormValues = z.infer<typeof bookSchema>;
@@ -42,6 +51,7 @@ export function BookForm({
   onDelete,
 }: BookFormProps) {
   const [cover, setCover] = useState(initialData?.cover ?? 0);
+  const noteId = useId();
 
   const {
     register,
@@ -56,6 +66,9 @@ export function BookForm({
       author: initialData?.author ?? '',
       tags: initialData?.tags.join(', ') ?? '',
       status: initialData?.status ?? 'want-to-read',
+      pages: initialData?.pages ? String(initialData.pages) : '',
+      currentPage: initialData?.currentPage ? String(initialData.currentPage) : '',
+      note: initialData?.note ?? '',
     },
   });
 
@@ -70,6 +83,9 @@ export function BookForm({
       author: values.author.trim(),
       status: values.status,
       cover,
+      pages: Number(values.pages) || 0,
+      currentPage: Number(values.currentPage) || 0,
+      note: values.note.trim(),
       tags: values.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -105,6 +121,46 @@ export function BookForm({
             error={errors.tags?.message}
             {...register('tags')}
           />
+
+          <div className="flex gap-3">
+            <Input
+              label="Pages"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              placeholder="—"
+              error={errors.pages?.message}
+              {...register('pages')}
+            />
+            <Input
+              label="On page"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              placeholder="—"
+              error={errors.currentPage?.message}
+              {...register('currentPage')}
+            />
+          </div>
+
+          <div className="flex flex-col gap-[7px]">
+            <label
+              htmlFor={noteId}
+              className="text-[11.5px] tracking-[0.08em] text-ink-3 uppercase"
+            >
+              My note
+            </label>
+            <textarea
+              id={noteId}
+              rows={3}
+              placeholder="Something worth remembering"
+              className="field w-full resize-none px-[14px] py-2.5 text-[14px] outline-none"
+              {...register('note')}
+            />
+            {errors.note?.message && (
+              <p className="text-[12.5px] text-danger">{errors.note.message}</p>
+            )}
+          </div>
 
           <fieldset className="flex flex-col gap-[9px]">
             <legend className="text-[11.5px] tracking-[0.08em] text-ink-3 uppercase">

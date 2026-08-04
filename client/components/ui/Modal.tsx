@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+import { useDialogBehaviour } from '@/hooks/useDialogBehaviour';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,72 +13,12 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const openerRef = useRef<HTMLElement | null>(null);
+  const panelRef = useDialogBehaviour(isOpen, onClose);
   const titleId = useId();
   const reduceMotion = useReducedMotion();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => setIsMounted(true), []);
-
-  // Remember who opened the modal and hand focus back to them on close,
-  // otherwise keyboard users get dropped at the top of the document.
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    openerRef.current = document.activeElement as HTMLElement | null;
-    const firstField = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE);
-    firstField?.focus();
-
-    const { overflow } = document.body.style;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = overflow;
-      openerRef.current?.focus();
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-
-      if (event.key !== 'Tab' || !panelRef.current) {
-        return;
-      }
-
-      // Wrap Tab at both ends so focus cannot escape to the page behind.
-      const fields = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)
-      );
-      if (fields.length === 0) {
-        return;
-      }
-
-      const first = fields[0];
-      const last = fields[fields.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   if (!isMounted) {
     return null;
@@ -102,23 +40,23 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           exit={{ opacity: 0 }}
           transition={{ duration }}
         >
-          <div className="absolute inset-0 bg-ink/40" onClick={onClose} />
+          <div className="absolute inset-0 bg-[rgba(28,24,20,.38)]" onClick={onClose} />
 
           <motion.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative flex h-full w-full flex-col overflow-y-auto bg-surface p-6 sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:rounded-lg"
+            className="relative flex h-full w-full flex-col overflow-y-auto bg-surface p-6 sm:h-auto sm:max-h-[88vh] sm:max-w-[520px] sm:rounded-[20px] sm:border sm:border-line sm:p-7 sm:shadow-[var(--shadow-3)]"
             initial={reduceMotion ? false : { y: 12 }}
             animate={{ y: 0 }}
             exit={reduceMotion ? undefined : { y: 12 }}
             transition={{ duration }}
           >
-            <h2 id={titleId} className="font-display text-xl font-semibold">
+            <h2 id={titleId} className="font-display text-[23px] tracking-[-0.015em]">
               {title}
             </h2>
-            <div className="mt-5">{children}</div>
+            <div className="mt-6">{children}</div>
           </motion.div>
         </motion.div>
       )}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AuthForm, type AuthMode } from '@/components/auth/AuthForm';
-import { BookshelfMark } from '@/components/auth/BookshelfMark';
+import { Bookcase } from '@/components/auth/Bookcase';
 
 const COPY: Record<
   AuthMode,
@@ -35,7 +35,7 @@ export default function AuthPage() {
       <div className="relative hidden flex-col justify-between overflow-hidden bg-[color-mix(in_oklab,var(--color-accent)_9%,var(--color-surface))] px-[52px] pt-11 lg:flex">
         <Wordmark />
 
-        <div className="mt-[14vh] mb-auto max-w-[430px]">
+        <div className="mt-[7vh] max-w-[430px]">
           <h1 className="font-display text-[42px] leading-[1.14] font-normal tracking-[-0.02em] text-pretty">
             Every great library starts with one book.
           </h1>
@@ -45,7 +45,10 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <BookshelfMark />
+        {/* mt-16 keeps the top shelf clear of the paragraph above it */}
+        <div className="mt-16 mb-0 flex-1 content-end">
+          <Bookcase />
+        </div>
       </div>
 
       <div className="flex items-center justify-center px-6 py-12 sm:px-12">

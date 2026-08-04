@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { QueryFilter, Types } from 'mongoose';
 import { isCoverIndex, pickCover } from '../lib/coverIndex';
 import { HttpError } from '../lib/httpError';
-import { readString, readStringArray } from '../lib/parseBody';
+import { readCount, readString, readStringArray } from '../lib/parseBody';
 import { Book, IBook, isBookStatus } from '../models/Book';
 
 type FieldErrors = Record<string, string>;
@@ -123,6 +123,9 @@ export async function createBook(
       ...(isBookStatus(status) ? { status } : {}),
       // Honour a picked colour, otherwise derive one from the title.
       cover: isCoverIndex(body.cover) ? body.cover : pickCover(title),
+      pages: readCount(body, 'pages'),
+      currentPage: readCount(body, 'currentPage'),
+      note: readString(body, 'note'),
       owner: ownerId,
     });
 
@@ -177,6 +180,23 @@ export async function updateBook(
 
     if (isCoverIndex(body.cover)) {
       book.cover = body.cover;
+    }
+
+    if ('pages' in body) {
+      book.pages = readCount(body, 'pages');
+    }
+
+    if ('currentPage' in body) {
+      book.currentPage = readCount(body, 'currentPage');
+    }
+
+    if ('note' in body) {
+      book.note = readString(body, 'note');
+    }
+
+    // A bookmark past the last page is nonsense, so clamp rather than reject.
+    if (book.pages > 0 && book.currentPage > book.pages) {
+      book.currentPage = book.pages;
     }
 
     if (Object.keys(errors).length > 0) {

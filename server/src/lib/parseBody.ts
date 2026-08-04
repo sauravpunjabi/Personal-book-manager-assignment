@@ -11,3 +11,14 @@ export function readStringArray(body: Record<string, unknown>, field: string): s
   const value = body[field];
   return Array.isArray(value) ? value.filter((item) => typeof item === 'string') : [];
 }
+
+/** Whole numbers only, never negative. Anything else reads as zero. */
+export function readCount(body: Record<string, unknown>, field: string): number {
+  const value = body[field];
+
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+
+  return Math.floor(value);
+}

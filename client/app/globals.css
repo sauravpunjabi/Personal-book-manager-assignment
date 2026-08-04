@@ -12,7 +12,7 @@
   --color-ink-2: #6b6259;
   --color-ink-3: #9c9287;
 
-  --color-accent: #bd6239;
+  --color-accent: #c85a32;
   --color-sand: #94762f;
   --color-sage: #5b7a58;
   --color-danger: #a8322a;
@@ -53,7 +53,7 @@
   --color-ink-2: #aca196;
   --color-ink-3: #7a7166;
 
-  --color-accent: #d97f52;
+  --color-accent: #e06d43;
   --color-sand: #c2a05a;
   --color-sage: #8bab84;
 
@@ -88,6 +88,17 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

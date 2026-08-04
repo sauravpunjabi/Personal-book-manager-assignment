@@ -38,13 +38,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // The inline script below deliberately mutates <html> before hydration, so
+    // React is told to expect this one element to differ.
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Applies the saved theme before first paint so dark-mode readers
-            never get a flash of the light palette. */}
+        {/* Runs before first paint: an explicit choice wins, otherwise follow
+            the operating system. Either way there is no flash of the wrong
+            palette on load. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('bookmark-theme');if(t==='dark')document.documentElement.dataset.theme='dark'}catch(e){}`,
+            __html: `try{var s=localStorage.getItem('bookmark-theme');var d=s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.dataset.theme='dark'}catch(e){}`,
           }}
         />
       </head>
