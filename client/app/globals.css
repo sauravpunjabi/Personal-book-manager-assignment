@@ -144,3 +144,13 @@ body {
 .field[aria-invalid='true']:focus {
   box-shadow: 0 0 0 3.5px color-mix(in oklab, var(--color-danger) 15%, transparent);
 }
+
+/* For inputs wrapped in a bordered shell, so the ring sits on the shell not the input */
+.field-shell:focus-within {
+  border-color: color-mix(in oklab, var(--color-accent) 55%, var(--color-line));
+  box-shadow: 0 0 0 3.5px color-mix(in oklab, var(--color-accent) 13%, transparent);
+}
+
+.field-shell :focus-visible {
+  outline: none;
+}

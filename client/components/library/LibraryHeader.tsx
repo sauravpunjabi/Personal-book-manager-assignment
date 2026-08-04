@@ -57,7 +57,7 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex h-10 w-full items-center gap-[9px] rounded-[12px] border border-line bg-surface px-3.5 transition-colors focus-within:border-ink-3 sm:w-[260px]">
+          <div className="field-shell flex h-10 w-full items-center gap-[9px] rounded-[12px] border border-line bg-surface px-3.5 transition-[border-color,box-shadow] duration-200 sm:w-[260px]">
             <svg
               width="14"
               height="14"
