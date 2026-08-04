@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
+import { BookCover } from '@/components/books/BookCover';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_LABELS, nextStatus } from '@/lib/bookStatus';
 import type { Book, BookStatus } from '@/types/book';
@@ -21,44 +22,48 @@ export function BookCard({ book, onEdit, onDelete, onStatusChange }: BookCardPro
       layout={!reduceMotion}
       whileHover={reduceMotion ? undefined : { y: -2 }}
       transition={{ duration: 0.15 }}
-      className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5"
+      className="flex gap-4 rounded-lg border border-line bg-surface p-4"
     >
-      <div className="space-y-1">
-        <h3 className="font-display text-lg leading-snug font-semibold text-balance">
-          {book.title}
-        </h3>
-        <p className="text-sm text-muted">{book.author}</p>
-      </div>
+      <BookCover book={book} sizes="80px" className="w-20 shrink-0" />
 
-      {book.tags.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5">
-          {book.tags.map((tag) => (
-            <li key={tag}>
-              <Badge variant="tag">{tag}</Badge>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="space-y-1">
+          <h3 className="font-display leading-snug font-semibold text-balance">
+            {book.title}
+          </h3>
+          <p className="text-sm text-muted">{book.author}</p>
+        </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        {/* The badge doubles as the control for advancing status. The label
+        {book.tags.length > 0 && (
+          <ul className="flex flex-wrap gap-1.5">
+            {book.tags.map((tag) => (
+              <li key={tag}>
+                <Badge variant="tag">{tag}</Badge>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
+          {/* The badge doubles as the control for advancing status. The label
             spells out where the next tap lands so it is not a guessing game. */}
-        <button
-          type="button"
-          onClick={() => onStatusChange(book, upcoming)}
-          aria-label={`Status: ${STATUS_LABELS[book.status]}. Change to ${STATUS_LABELS[upcoming]}`}
-          className="rounded-full transition-opacity hover:opacity-70"
-        >
-          <Badge variant={book.status}>{STATUS_LABELS[book.status]}</Badge>
-        </button>
+          <button
+            type="button"
+            onClick={() => onStatusChange(book, upcoming)}
+            aria-label={`Status: ${STATUS_LABELS[book.status]}. Change to ${STATUS_LABELS[upcoming]}`}
+            className="rounded-full transition-opacity hover:opacity-70"
+          >
+            <Badge variant={book.status}>{STATUS_LABELS[book.status]}</Badge>
+          </button>
 
-        <div className="flex items-center gap-1">
-          <IconButton label={`Edit ${book.title}`} onClick={() => onEdit(book)}>
-            <PencilIcon />
-          </IconButton>
-          <IconButton label={`Delete ${book.title}`} onClick={() => onDelete(book)}>
-            <TrashIcon />
-          </IconButton>
+          <div className="flex items-center gap-1">
+            <IconButton label={`Edit ${book.title}`} onClick={() => onEdit(book)}>
+              <PencilIcon />
+            </IconButton>
+            <IconButton label={`Delete ${book.title}`} onClick={() => onDelete(book)}>
+              <TrashIcon />
+            </IconButton>
+          </div>
         </div>
       </div>
     </motion.li>

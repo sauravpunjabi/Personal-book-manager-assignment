@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BookCover } from '@/components/books/BookCover';
 import { Badge } from '@/components/ui/Badge';
 import { STATUS_LABELS } from '@/lib/bookStatus';
 import type { Book } from '@/types/book';
@@ -22,17 +23,20 @@ export function ReadingSection({ title, books, emptyMessage }: ReadingSectionPro
             <li key={book._id} className="w-56 shrink-0 snap-start">
               <Link
                 href="/books"
-                className="flex h-full flex-col gap-3 rounded-lg border border-line bg-surface p-4 transition-colors hover:border-muted/50"
+                className="flex h-full gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-muted/50"
               >
-                <div className="space-y-1">
-                  <p className="font-display leading-snug font-semibold text-balance">
-                    {book.title}
-                  </p>
-                  <p className="text-sm text-muted">{book.author}</p>
+                <BookCover book={book} sizes="56px" className="w-14 shrink-0" />
+                <div className="flex min-w-0 flex-col gap-2">
+                  <div className="space-y-0.5">
+                    <p className="font-display text-sm leading-snug font-semibold text-balance">
+                      {book.title}
+                    </p>
+                    <p className="text-xs text-muted">{book.author}</p>
+                  </div>
+                  <Badge variant={book.status} className="mt-auto self-start">
+                    {STATUS_LABELS[book.status]}
+                  </Badge>
                 </div>
-                <Badge variant={book.status} className="mt-auto self-start">
-                  {STATUS_LABELS[book.status]}
-                </Badge>
               </Link>
             </li>
           ))}

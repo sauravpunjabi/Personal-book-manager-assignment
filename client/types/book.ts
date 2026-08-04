@@ -8,6 +8,8 @@ export interface Book {
   author: string;
   tags: string[];
   status: BookStatus;
+  /** Resolved by the server. Empty when no cover was found. */
+  coverUrl: string;
   owner: string;
   createdAt: string;
   updatedAt: string;

@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { QueryFilter, Types } from 'mongoose';
+import { findCoverUrl } from '../lib/bookCover';
 import { HttpError } from '../lib/httpError';
 import { readString, readStringArray } from '../lib/parseBody';
 import { Book, IBook, isBookStatus } from '../models/Book';
@@ -120,6 +121,7 @@ export async function createBook(
       author,
       tags: readStringArray(body, 'tags'),
       ...(isBookStatus(status) ? { status } : {}),
+      coverUrl: await findCoverUrl(title, author),
       owner: ownerId,
     });
 
@@ -175,6 +177,13 @@ export async function updateBook(
     if (Object.keys(errors).length > 0) {
       res.status(400).json({ message: 'Please check the highlighted fields', errors });
       return;
+    }
+
+    // A renamed book needs a new cover, even if the lookup comes back empty —
+    // the old art belongs to a different book. Otherwise only retry when we
+    // never managed to find one, since Open Library may have been down.
+    if (book.isModified('title') || book.isModified('author') || !book.coverUrl) {
+      book.coverUrl = await findCoverUrl(book.title, book.author);
     }
 
     res.json(await book.save());
