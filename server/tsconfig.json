@@ -12,5 +12,10 @@
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    // ts-node follows imports only, so it would miss src/types/express.d.ts —
+    // nothing imports a global declaration file. This makes it read "include".
+    "files": true
+  }
 }
