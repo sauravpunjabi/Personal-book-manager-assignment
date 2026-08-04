@@ -1,25 +1,26 @@
 import type { Metadata } from 'next';
-import { Fraunces, Work_Sans } from 'next/font/google';
+import { DM_Sans, Newsreader } from 'next/font/google';
 import './globals.css';
 
-// Fraunces for headings — it has actual personality, and the softness suits a
-// reading app. Work Sans carries the interface text.
-const fraunces = Fraunces({
-  variable: '--font-fraunces',
+// Both fonts come from the design handoff: Newsreader for anything that reads
+// like prose, DM Sans for the interface itself.
+const newsreader = Newsreader({
+  variable: '--font-newsreader',
   subsets: ['latin'],
+  style: ['normal', 'italic'],
   display: 'swap',
 });
 
-const workSans = Work_Sans({
-  variable: '--font-work-sans',
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
   subsets: ['latin'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Personal Book Manager',
+  title: 'Bookmark',
   description:
-    'Keep track of what you have read, what you are reading, and what is next.',
+    'A quiet place for the books you are reading, finished, and still to start.',
 };
 
 export default function RootLayout({
@@ -29,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fraunces.variable} ${workSans.variable} antialiased`}>
+      <body className={`${newsreader.variable} ${dmSans.variable} antialiased`}>
         {children}
       </body>
     </html>

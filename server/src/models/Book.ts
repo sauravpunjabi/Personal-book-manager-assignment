@@ -1,4 +1,5 @@
 import { Document, Schema, Types, model } from 'mongoose';
+import { COVER_COUNT } from '../lib/coverIndex';
 
 export const BOOK_STATUSES = ['want-to-read', 'reading', 'completed'] as const;
 
@@ -14,7 +15,7 @@ export interface IBook extends Document {
   author: string;
   tags: string[];
   status: BookStatus;
-  coverUrl: string;
+  cover: number;
   owner: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -26,9 +27,8 @@ const bookSchema = new Schema<IBook>(
     author: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
     status: { type: String, enum: BOOK_STATUSES, default: 'want-to-read' },
-    // Resolved from Open Library when the book is saved. Empty means no cover
-    // was found, and the client draws a typographic one instead.
-    coverUrl: { type: String, default: '' },
+    // Index into the design's cover palette. Covers are drawn, not fetched.
+    cover: { type: Number, default: 0, min: 0, max: COVER_COUNT - 1 },
     owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   },
   { timestamps: true }

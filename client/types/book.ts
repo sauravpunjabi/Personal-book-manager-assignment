@@ -8,8 +8,8 @@ export interface Book {
   author: string;
   tags: string[];
   status: BookStatus;
-  /** Resolved by the server. Empty when no cover was found. */
-  coverUrl: string;
+  /** Index into the drawn cover palette. */
+  cover: number;
   owner: string;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +20,7 @@ export interface CreateBookInput {
   author: string;
   tags: string[];
   status: BookStatus;
+  cover: number;
 }
 
 export type UpdateBookInput = Partial<CreateBookInput>;

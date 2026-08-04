@@ -10,16 +10,18 @@ interface ButtonProps extends React.ComponentPropsWithRef<'button'> {
 }
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-ink text-paper hover:bg-ink/90',
-  secondary: 'border border-line bg-surface text-ink hover:bg-paper',
-  danger: 'bg-danger text-white hover:bg-danger/90',
-  ghost: 'text-muted hover:bg-line/50 hover:text-ink',
+  primary:
+    'bg-accent text-[#fffdfa] shadow-[var(--shadow-1)] hover:brightness-[1.06] active:scale-[.985]',
+  secondary:
+    'border border-line bg-surface text-ink hover:bg-surface-2 hover:border-ink-3',
+  danger: 'bg-danger text-[#fffdfa] hover:brightness-[1.06] active:scale-[.985]',
+  ghost: 'text-ink-2 hover:bg-surface-2 hover:text-ink',
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-11 px-5 text-sm',
-  lg: 'h-12 px-6 text-base',
+  sm: 'h-9 px-3 text-[13px]',
+  md: 'h-[42px] px-4 text-[13.5px]',
+  lg: 'h-[46px] px-5 text-[14.5px]',
 };
 
 export function Button({
@@ -36,8 +38,9 @@ export function Button({
       // The label stays in the DOM while loading so the button keeps its width
       // and the row does not jump.
       className={cn(
-        'relative inline-flex items-center justify-center rounded-md font-medium transition-colors',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'relative inline-flex items-center justify-center gap-2 rounded-[12px] font-medium',
+        'transition-[transform,filter,background-color,border-color,color] duration-200',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100',
         VARIANTS[variant],
         SIZES[size],
         className
@@ -45,7 +48,9 @@ export function Button({
       disabled={disabled || isLoading}
       {...props}
     >
-      <span className={cn(isLoading && 'invisible')}>{children}</span>
+      <span className={cn('inline-flex items-center gap-2', isLoading && 'invisible')}>
+        {children}
+      </span>
       {isLoading && (
         <span className="absolute inset-0 flex items-center justify-center">
           <Spinner />

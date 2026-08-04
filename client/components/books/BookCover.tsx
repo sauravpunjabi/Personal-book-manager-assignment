@@ -1,81 +1,64 @@
-'use client';
-
-import { useState } from 'react';
-import Image from 'next/image';
+import { paletteFor, shapeFor, surnameOf } from '@/lib/bookCover';
 import { cn } from '@/lib/utils';
 import type { Book } from '@/types/book';
 
-// Flat washes only — enough to tell one spine from another on a shelf.
-const SPINE_TINTS = [
-  'bg-status-want/15',
-  'bg-status-reading/15',
-  'bg-status-done/15',
-  'bg-line',
-];
-
-/** Same title always gets the same colour, so a shelf stays put between loads. */
-function tintFor(title: string): string {
-  let hash = 0;
-  for (let index = 0; index < title.length; index += 1) {
-    hash = (hash * 31 + title.charCodeAt(index)) >>> 0;
-  }
-  return SPINE_TINTS[hash % SPINE_TINTS.length];
-}
-
-const COVER_HOST = 'covers.openlibrary.org';
-
-/**
- * next/image throws while rendering if the host is not in next.config's
- * remotePatterns, which takes the whole page down and never reaches onError.
- * Checking first means an unexpected URL degrades to the drawn cover instead.
- */
-function isRenderable(coverUrl: string): boolean {
-  try {
-    const { protocol, hostname } = new URL(coverUrl);
-    return protocol === 'https:' && hostname === COVER_HOST;
-  } catch {
-    return false;
-  }
-}
+type CoverBook = Pick<Book, 'title' | 'author' | 'cover'>;
 
 interface BookCoverProps {
-  book: Pick<Book, 'title' | 'author' | 'coverUrl'>;
-  sizes: string;
+  book: CoverBook;
+  /** 'full' prints the title and author; 'thumb' is the bar-only treatment. */
+  variant?: 'full' | 'thumb';
   className?: string;
 }
 
-export function BookCover({ book, sizes, className }: BookCoverProps) {
-  const [hasFailed, setHasFailed] = useState(false);
-  const showArtwork = isRenderable(book.coverUrl) && !hasFailed;
+/**
+ * Covers are drawn, never fetched. Colour comes from the book, shape from its
+ * title, so every spine is stable and no network request can leave a hole in
+ * the shelf.
+ */
+export function BookCover({ book, variant = 'full', className }: BookCoverProps) {
+  const palette = paletteFor(book.cover);
+  const shape = shapeFor(book.title, book.author);
 
   return (
     <div
+      aria-hidden="true"
       className={cn(
-        'relative aspect-2/3 overflow-hidden rounded border border-line',
-        !showArtwork && tintFor(book.title),
+        'relative flex aspect-2/3 flex-col overflow-hidden shadow-[var(--cover-shadow)]',
+        variant === 'full'
+          ? 'rounded-[10px] px-4 py-[18px]'
+          : 'justify-end rounded-[5px] p-1.5',
         className
       )}
+      style={{
+        background: palette.bg,
+        color: palette.fg,
+        justifyContent: variant === 'full' ? shape.justify : undefined,
+      }}
     >
-      {showArtwork ? (
-        // Decorative: the title and author sit next to it in real text, so
-        // announcing the cover as well would just repeat them.
-        <Image
-          src={book.coverUrl}
-          alt=""
-          fill
-          sizes={sizes}
-          className="object-cover"
-          onError={() => setHasFailed(true)}
-        />
-      ) : (
-        <div className="flex h-full flex-col justify-between gap-1 p-2">
-          <p className="font-display text-[11px] leading-tight font-semibold line-clamp-4">
+      <div
+        className="flex-none"
+        style={{
+          width: variant === 'full' ? shape.barWidth : '60%',
+          height: variant === 'full' ? shape.barHeight : '3px',
+          borderRadius: variant === 'full' ? shape.barRadius : '2px',
+          background: palette.accent,
+          marginBottom: variant === 'full' ? 16 : 0,
+        }}
+      />
+
+      {variant === 'full' && (
+        <>
+          <p
+            className="font-display leading-[1.1] tracking-[-0.012em]"
+            style={{ fontSize: shape.titleSize }}
+          >
             {book.title}
           </p>
-          <p className="text-[9px] leading-tight text-muted line-clamp-2">
-            {book.author}
+          <p className="mt-2.5 text-[9px] tracking-[0.16em] uppercase opacity-70">
+            {surnameOf(book.author)}
           </p>
-        </div>
+        </>
       )}
     </div>
   );

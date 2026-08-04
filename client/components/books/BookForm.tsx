@@ -1,9 +1,10 @@
 'use client';
 
-import { useId } from 'react';
-import { useForm } from 'react-hook-form';
+import { useId, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { CoverPicker } from '@/components/books/CoverPicker';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { STATUS_LABELS } from '@/lib/bookStatus';
@@ -34,10 +35,12 @@ export function BookForm({
   onCancel,
 }: BookFormProps) {
   const statusId = useId();
+  const [cover, setCover] = useState(initialData?.cover ?? 0);
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<BookFormValues>({
     resolver: zodResolver(bookSchema),
@@ -49,11 +52,16 @@ export function BookForm({
     },
   });
 
+  // Watched so the cover preview updates as the title and author are typed.
+  const previewTitle = useWatch({ control, name: 'title' });
+  const previewAuthor = useWatch({ control, name: 'author' });
+
   function submit(values: BookFormValues) {
     onSubmit({
       title: values.title.trim(),
       author: values.author.trim(),
       status: values.status,
+      cover,
       tags: values.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -63,6 +71,13 @@ export function BookForm({
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="space-y-5">
+      <CoverPicker
+        title={previewTitle}
+        author={previewAuthor}
+        cover={cover}
+        onChange={setCover}
+      />
+
       <Input
         label="Title"
         autoFocus

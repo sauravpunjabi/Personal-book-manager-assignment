@@ -24,7 +24,7 @@ export function BookCard({ book, onEdit, onDelete, onStatusChange }: BookCardPro
       transition={{ duration: 0.15 }}
       className="flex gap-4 rounded-lg border border-line bg-surface p-4"
     >
-      <BookCover book={book} sizes="80px" className="w-20 shrink-0" />
+      <BookCover book={book} variant="thumb" className="w-20 shrink-0" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="space-y-1">

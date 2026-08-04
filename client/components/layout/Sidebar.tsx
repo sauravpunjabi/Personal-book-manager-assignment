@@ -20,7 +20,7 @@ export function Sidebar() {
     <>
       <aside className="hidden w-56 shrink-0 border-r border-line px-4 py-6 md:block">
         <Link href="/dashboard" className="font-display text-lg font-semibold">
-          Shelf
+          Bookmark
         </Link>
 
         <nav className="mt-8 space-y-1">

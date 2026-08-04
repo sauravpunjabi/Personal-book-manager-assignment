@@ -1,40 +1,96 @@
-import Link from 'next/link';
+'use client';
 
-export default function HomePage() {
+import { useState } from 'react';
+import { AuthForm, type AuthMode } from '@/components/auth/AuthForm';
+import { BookshelfMark } from '@/components/auth/BookshelfMark';
+
+const COPY: Record<
+  AuthMode,
+  Record<'title' | 'subtitle' | 'cta' | 'note' | 'alt', string>
+> = {
+  signin: {
+    title: 'Welcome back',
+    subtitle: 'Your shelf is exactly where you left it.',
+    cta: 'Sign in',
+    note: 'new here',
+    alt: 'Create an account',
+  },
+  signup: {
+    title: 'Start your library',
+    subtitle: 'One account, one shelf, no algorithm deciding what you read next.',
+    cta: 'Create my library',
+    note: 'already have one',
+    alt: 'Sign in instead',
+  },
+};
+
+export default function AuthPage() {
+  const [mode, setMode] = useState<AuthMode>('signin');
+  const copy = COPY[mode];
+
   return (
-    <div className="flex min-h-screen flex-col px-6 py-8">
-      <header>
-        <span className="font-display text-lg font-semibold">Shelf</span>
-      </header>
+    <div className="grid min-h-screen animate-[fadeIn_.5s_ease_both] lg:grid-cols-[1.05fr_.95fr]">
+      {/* Decorative column. Dropped entirely below lg so phones get the form
+          without scrolling past a half-metre of shelf first. */}
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-[color-mix(in_oklab,var(--color-accent)_9%,var(--color-surface))] px-[52px] pt-11 lg:flex">
+        <Wordmark />
 
-      <main className="flex flex-1 items-center">
-        <div className="max-w-xl space-y-8">
-          <div className="space-y-4">
-            <h1 className="font-display text-5xl leading-tight font-semibold text-balance sm:text-6xl">
-              Every book you meant to finish.
-            </h1>
-            <p className="text-lg text-muted text-pretty">
-              A quiet place to keep what you are reading, what you finished, and what is
-              still waiting.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex h-12 items-center rounded-md bg-ink px-6 font-medium text-paper transition-colors hover:bg-ink/90"
-            >
-              Start your shelf
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex h-12 items-center rounded-md border border-line bg-surface px-6 font-medium transition-colors hover:bg-paper"
-            >
-              Log in
-            </Link>
-          </div>
+        <div className="mt-[14vh] mb-auto max-w-[430px]">
+          <h1 className="font-display text-[42px] leading-[1.14] font-normal tracking-[-0.02em] text-pretty">
+            Every great library starts with one book.
+          </h1>
+          <p className="mt-5 max-w-[340px] text-[14.5px] leading-[1.65] text-ink-2">
+            A quiet place for the books you&rsquo;re reading, the ones you finished, and
+            the ones still waiting for a rainy afternoon.
+          </p>
         </div>
-      </main>
+
+        <BookshelfMark />
+      </div>
+
+      <div className="flex items-center justify-center px-6 py-12 sm:px-12">
+        <div className="w-full max-w-[352px]">
+          <div className="mb-10 lg:hidden">
+            <Wordmark />
+          </div>
+
+          <h2 className="font-display text-[30px] leading-[1.2] tracking-[-0.015em]">
+            {copy.title}
+          </h2>
+          <p className="mt-[9px] text-[14px] leading-[1.6] text-ink-2">{copy.subtitle}</p>
+
+          <AuthForm key={mode} mode={mode} cta={copy.cta} />
+
+          <div className="mt-[22px] flex items-center gap-3 text-[12px] text-ink-3">
+            <span className="h-px flex-1 bg-line" />
+            <span>{copy.note}</span>
+            <span className="h-px flex-1 bg-line" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMode(mode === 'signup' ? 'signin' : 'signup')}
+            className="mt-[18px] h-11 w-full rounded-[12px] border border-line bg-surface text-[14px] text-ink transition-colors hover:border-ink-3 hover:bg-surface-2"
+          >
+            {copy.alt}
+          </button>
+
+          <p className="mt-7 text-[12px] leading-[1.6] text-ink-3">
+            Your library is yours alone. We never share what you read.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Wordmark() {
+  return (
+    <div className="flex items-center gap-[11px]">
+      <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-[#fffdfa]">
+        B
+      </span>
+      <span className="text-[14.5px] font-medium tracking-[-0.01em]">Bookmark</span>
     </div>
   );
 }

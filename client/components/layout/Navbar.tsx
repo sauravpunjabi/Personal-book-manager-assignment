@@ -23,13 +23,13 @@ export function Navbar() {
       console.error(error);
     } finally {
       clearSession();
-      router.replace('/login');
+      router.replace('/');
     }
   }
 
   return (
     <header className="flex items-center justify-between gap-4 border-b border-line px-6 py-3">
-      <span className="font-display text-base font-semibold md:hidden">Shelf</span>
+      <span className="font-display text-base font-semibold md:hidden">Bookmark</span>
 
       <div className="ml-auto flex items-center gap-3">
         {user && <span className="hidden text-sm text-muted sm:inline">{user.name}</span>}

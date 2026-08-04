@@ -25,7 +25,7 @@ export function ReadingSection({ title, books, emptyMessage }: ReadingSectionPro
                 href="/books"
                 className="flex h-full gap-3 rounded-lg border border-line bg-surface p-3 transition-colors hover:border-muted/50"
               >
-                <BookCover book={book} sizes="56px" className="w-14 shrink-0" />
+                <BookCover book={book} variant="thumb" className="w-14 shrink-0" />
                 <div className="flex min-w-0 flex-col gap-2">
                   <div className="space-y-0.5">
                     <p className="font-display text-sm leading-snug font-semibold text-balance">
