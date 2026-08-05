@@ -1,7 +1,7 @@
 'use client';
 
 import { BookCover } from '@/components/books/BookCover';
-import { StatusPill } from '@/components/library/BookGrid';
+import { StatusPill } from '@/components/library/StatusPill';
 import type { Book, BookStatus } from '@/types/book';
 
 const COLUMNS = 'grid-cols-[1fr_190px_190px_130px]';

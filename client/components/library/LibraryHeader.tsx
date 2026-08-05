@@ -1,5 +1,7 @@
 'use client';
 
+import { useReducedMotion } from 'framer-motion';
+import { useCountUp } from '@/hooks/useCountUp';
 import { STATUS_COLORS, STATUS_LABELS } from '@/lib/bookStatus';
 import { useFilterStore } from '@/store/filter.store';
 import { BOOK_STATUSES, type Book } from '@/types/book';
@@ -12,6 +14,33 @@ function greetingFor(hour: number): string {
     return 'Good morning';
   }
   return hour < EVENING ? 'Good afternoon' : 'Good evening';
+}
+
+/** Picks the book closest to finishing and says how far is left */
+function nudgeFor(books: Book[]): string {
+  if (books.length === 0) {
+    return 'An empty shelf, waiting.';
+  }
+
+  const nearest = books
+    .filter((book) => book.status === 'reading' && book.pages > 0)
+    .sort((a, b) => b.currentPage / b.pages - a.currentPage / a.pages)[0];
+
+  if (nearest) {
+    const remaining = Math.max(nearest.pages - nearest.currentPage, 0);
+
+    if (remaining === 0) {
+      return `You have finished ${nearest.title} — mark it completed.`;
+    }
+    return `You are ${remaining} page${remaining === 1 ? '' : 's'} from finishing ${nearest.title}.`;
+  }
+
+  const reading = books.filter((book) => book.status === 'reading').length;
+
+  if (reading > 0) {
+    return `${reading} book${reading === 1 ? '' : 's'} in progress.`;
+  }
+  return 'Nothing in progress — pick something from the want-to-read shelf.';
 }
 
 interface LibraryHeaderProps {
@@ -28,13 +57,7 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
 
   // Safe to read the clock: this only ever renders in the browser
   const greeting = greetingFor(new Date().getHours());
-  const reading = books.filter((book) => book.status === 'reading');
-
-  const nudge = books.length
-    ? reading.length
-      ? `${reading.length} book${reading.length === 1 ? '' : 's'} in progress.`
-      : 'Nothing in progress — pick something from the want-to-read shelf.'
-    : 'An empty shelf, waiting.';
+  const nudge = nudgeFor(books);
 
   const stats = [
     { label: 'books', value: books.length, color: 'var(--color-ink)' },
@@ -88,15 +111,16 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
             className="flex gap-0.5 rounded-[11px] border border-line bg-surface p-[3px]"
           >
             <ViewButton
-              label="Grid view"
-              isActive={view === 'grid'}
-              onClick={() => setView('grid')}
+              label="Shelf view"
+              isActive={view === 'shelf'}
+              onClick={() => setView('shelf')}
             >
               <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-                <rect x="2" y="2" width="5" height="5" rx="1.4" />
-                <rect x="9" y="2" width="5" height="5" rx="1.4" />
-                <rect x="2" y="9" width="5" height="5" rx="1.4" />
-                <rect x="9" y="9" width="5" height="5" rx="1.4" />
+                <rect x="2" y="3" width="2.4" height="9" rx="0.6" />
+                <rect x="5.2" y="4.5" width="2.4" height="7.5" rx="0.6" />
+                <rect x="8.4" y="2.5" width="2.4" height="9.5" rx="0.6" />
+                <rect x="11.6" y="5" width="2.4" height="7" rx="0.6" />
+                <rect x="1.5" y="13" width="13" height="1.4" rx="0.7" />
               </svg>
             </ViewButton>
             <ViewButton
@@ -142,18 +166,27 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
 
       <div className="mt-[22px] flex flex-wrap items-center gap-x-[30px] gap-y-2">
         {stats.map((stat) => (
-          <div key={stat.label} className="flex items-baseline gap-2">
-            <span
-              className="font-display text-[23px] leading-none tabular-nums"
-              style={{ color: stat.color }}
-            >
-              {stat.value}
-            </span>
-            <span className="text-[12px] tracking-[0.01em] text-ink-2">{stat.label}</span>
-          </div>
+          <Stat key={stat.label} {...stat} />
         ))}
       </div>
     </header>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: number; color: string }) {
+  const reduceMotion = useReducedMotion();
+  const shown = useCountUp(value, !reduceMotion);
+
+  return (
+    <div className="flex items-baseline gap-2">
+      <span
+        className="font-display text-[23px] leading-none tabular-nums"
+        style={{ color }}
+      >
+        {shown}
+      </span>
+      <span className="text-[12px] tracking-[0.01em] text-ink-2">{label}</span>
+    </div>
   );
 }
 

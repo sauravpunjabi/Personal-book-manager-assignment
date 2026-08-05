@@ -3,7 +3,7 @@ import type { BookStatus } from '@/types/book';
 
 export type StatusFilter = BookStatus | 'all';
 export type SortOrder = 'recent' | 'title' | 'author';
-export type ViewMode = 'grid' | 'list';
+export type ViewMode = 'shelf' | 'list';
 
 interface FilterState {
   status: StatusFilter;
@@ -24,7 +24,7 @@ export const useFilterStore = create<FilterState>((set) => ({
   tag: null,
   query: '',
   sort: 'recent',
-  view: 'grid',
+  view: 'shelf',
 
   setStatus: (status) => set({ status }),
   // One tag at a time, as the design has it — clicking the active tag clears it.

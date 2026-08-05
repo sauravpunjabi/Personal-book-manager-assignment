@@ -8,7 +8,7 @@ import { useDialogBehaviour } from '@/hooks/useDialogBehaviour';
 import { STATUS_COLORS, STATUS_LABELS } from '@/lib/bookStatus';
 import { BOOK_STATUSES, type Book, type BookStatus } from '@/types/book';
 
-interface BookDrawerProps {
+interface BookDetailProps {
   book: Book | null;
   onClose: () => void;
   onStatusChange: (book: Book, status: BookStatus) => void;
@@ -16,13 +16,13 @@ interface BookDrawerProps {
   onDelete: (book: Book) => void;
 }
 
-export function BookDrawer({
+export function BookDetail({
   book,
   onClose,
   onStatusChange,
   onEdit,
   onDelete,
-}: BookDrawerProps) {
+}: BookDetailProps) {
   const isOpen = book !== null;
   const panelRef = useDialogBehaviour(isOpen, onClose);
   const titleId = useId();
@@ -39,25 +39,25 @@ export function BookDrawer({
     <AnimatePresence>
       {book && (
         <motion.div
-          key="drawer"
-          className="fixed inset-0 z-40"
+          key="detail"
+          className="fixed inset-0 z-40 flex items-end justify-center sm:items-center sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.28 }}
+          transition={{ duration: reduceMotion ? 0 : 0.26 }}
         >
-          <div className="absolute inset-0 bg-[rgba(28,24,20,.34)]" onClick={onClose} />
+          <div className="absolute inset-0 bg-[rgba(28,24,20,.38)]" onClick={onClose} />
 
           <motion.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="absolute inset-y-0 right-0 flex w-full max-w-[456px] flex-col border-l border-line bg-surface shadow-[var(--shadow-3)]"
-            initial={reduceMotion ? false : { x: 28 }}
-            animate={{ x: 0 }}
-            exit={reduceMotion ? undefined : { x: 28 }}
-            transition={{ duration: reduceMotion ? 0 : 0.38, ease: [0.2, 0.7, 0.3, 1] }}
+            className="relative flex max-h-[92vh] w-full flex-col overflow-hidden bg-surface shadow-[var(--shadow-3)] sm:max-h-[88vh] sm:max-w-[520px] sm:rounded-[20px] sm:border sm:border-line"
+            initial={reduceMotion ? false : { y: 14, scale: 0.985 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={reduceMotion ? undefined : { y: 14, scale: 0.985 }}
+            transition={{ duration: reduceMotion ? 0 : 0.32, ease: [0.2, 0.7, 0.3, 1] }}
           >
             <header className="flex items-center justify-between border-b border-line-soft px-6 py-[18px]">
               <p className="text-[11px] tracking-[0.12em] text-ink-3 uppercase">

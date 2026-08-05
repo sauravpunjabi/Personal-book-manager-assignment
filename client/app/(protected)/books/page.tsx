@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookDrawer } from '@/components/books/BookDrawer';
+import { BookDetail } from '@/components/books/BookDetail';
 import { BookForm } from '@/components/books/BookForm';
 import { DeleteModal } from '@/components/books/DeleteModal';
-import { BookGrid } from '@/components/library/BookGrid';
 import { BookListView } from '@/components/library/BookListView';
+import { Bookshelf } from '@/components/shelf/Bookshelf';
 import { EmptyLibrary, EmptyResults } from '@/components/library/LibraryEmpty';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
 import { LibrarySidebar } from '@/components/library/LibrarySidebar';
@@ -14,6 +14,7 @@ import { MobileShelfBar } from '@/components/library/MobileShelfBar';
 import { Toast } from '@/components/library/Toast';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { useShelfFlip } from '@/hooks/useShelfFlip';
 import { getApiError } from '@/lib/apiError';
 import { surnameOf } from '@/lib/bookCover';
 import * as booksService from '@/lib/services/books.service';
@@ -91,6 +92,40 @@ export default function LibraryPage() {
     return [...matched].sort(order[sort]);
   }, [books, status, tag, query, sort]);
 
+  // The shelf keeps every book in place and greys the ones that miss the search,
+  // so filtering reads as narrowing rather than as books vanishing.
+  const shelfBooks = useMemo(
+    () => (status === 'all' ? books : books.filter((book) => book.status === status)),
+    [books, status]
+  );
+
+  const dimmedIds = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const dimmed = new Set<string>();
+
+    if (!needle && !tag) {
+      return dimmed;
+    }
+
+    for (const book of shelfBooks) {
+      const haystack =
+        `${book.title} ${book.author} ${book.tags.join(' ')}`.toLowerCase();
+      const matches =
+        (!tag || book.tags.includes(tag)) && (!needle || haystack.includes(needle));
+
+      if (!matches) {
+        dimmed.add(book._id);
+      }
+    }
+
+    return dimmed;
+  }, [shelfBooks, query, tag]);
+
+  // Any change to which shelf a book sits on replays as a physical move
+  const recordShelf = useShelfFlip(
+    shelfBooks.map((book) => `${book._id}:${book.status}:${book.updatedAt}`).join('|')
+  );
+
   // Looked up, not stored, so a status change inside the drawer shows immediately
   const detail = useMemo(
     () => books.find((book) => book._id === detailId) ?? null,
@@ -135,9 +170,17 @@ export default function LibraryPage() {
 
   async function changeStatus(book: Book, next: BookStatus) {
     const previous = books;
+
+    // Measure the shelf before React moves anything, so Flip can replay the move
+    recordShelf();
+
+    // Bumping updatedAt here as well as on the server puts the book at the end
+    // of its new shelf immediately, rather than jumping there once the reply lands
     setBooks((current) =>
       current.map((entry) =>
-        entry._id === book._id ? { ...entry, status: next } : entry
+        entry._id === book._id
+          ? { ...entry, status: next, updatedAt: new Date().toISOString() }
+          : entry
       )
     );
 
@@ -216,6 +259,9 @@ export default function LibraryPage() {
     setDetailId(null);
   }
 
+  // Remounting on a deliberate shelf change replays the stagger; typing is excluded
+  const shelfKey = `${status}-${tag ?? 'none'}-${sort}`;
+
   const isFiltered = status !== 'all' || tag !== null || query.trim() !== '';
   const echo = query.trim() ? `“${query.trim()}”` : tag ? `“${tag}”` : 'that shelf';
 
@@ -272,26 +318,27 @@ export default function LibraryPage() {
             <EmptyLibrary onAdd={openAdd} />
           )}
 
-          {!isLoading && !loadError && books.length > 0 && visible.length === 0 && (
+          {!isLoading && !loadError && books.length > 0 && view === 'shelf' && (
+            <Bookshelf
+              key={shelfKey}
+              books={shelfBooks}
+              dimmedIds={dimmedIds}
+              onOpen={(book) => setDetailId(book._id)}
+              onAdd={openAdd}
+            />
+          )}
+
+          {!isLoading && !loadError && view === 'list' && visible.length === 0 && (
             <EmptyResults echo={echo} onClear={clearFilters} />
           )}
 
-          {!isLoading &&
-            !loadError &&
-            visible.length > 0 &&
-            (view === 'grid' ? (
-              <BookGrid
-                books={visible}
-                onOpen={(book) => setDetailId(book._id)}
-                onStatusChange={changeStatus}
-              />
-            ) : (
-              <BookListView
-                books={visible}
-                onOpen={(book) => setDetailId(book._id)}
-                onStatusChange={changeStatus}
-              />
-            ))}
+          {!isLoading && !loadError && view === 'list' && visible.length > 0 && (
+            <BookListView
+              books={visible}
+              onOpen={(book) => setDetailId(book._id)}
+              onStatusChange={changeStatus}
+            />
+          )}
         </section>
       </main>
 
@@ -318,7 +365,7 @@ export default function LibraryPage() {
         onCancel={() => setPendingDelete(null)}
       />
 
-      <BookDrawer
+      <BookDetail
         book={detail}
         onClose={() => setDetailId(null)}
         onStatusChange={changeStatus}

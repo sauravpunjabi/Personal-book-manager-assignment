@@ -9,10 +9,16 @@ import { notFoundHandler } from './middleware/notFound';
 
 const app = express();
 
-// The JWT rides in a cookie, so the origin must be named — no wildcard allowed
+// Comma-separated, so one value can cover localhost and the deployed site at once
+const allowedOrigins = (process.env.CLIENT_ORIGIN ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+// The JWT rides in a cookie, so origins must be named — no wildcard allowed
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
