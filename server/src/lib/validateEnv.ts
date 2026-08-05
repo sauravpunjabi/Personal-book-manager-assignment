@@ -1,4 +1,5 @@
-const REQUIRED_VARS = ['PORT', 'MONGODB_URI', 'JWT_SECRET', 'CLIENT_ORIGIN'] as const;
+// PORT is left out on purpose: hosts inject their own and the code falls back to 5000
+const REQUIRED_VARS = ['MONGODB_URI', 'JWT_SECRET', 'CLIENT_ORIGIN'] as const;
 
 /** Fails fast on boot rather than at the first login attempt */
 export function validateEnv(): void {

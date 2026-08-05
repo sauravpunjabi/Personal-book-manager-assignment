@@ -10,12 +10,16 @@
 
   --color-ink: #2a2622;
   --color-ink-2: #6b6259;
-  --color-ink-3: #9c9287;
+  /* Darker than the handoff's #9c9287, which fell short of WCAG AA as body text */
+  --color-ink-3: #766e67;
 
   --color-accent: #4a6b53;
-  --color-sand: #94762f;
+  --color-sand: #806629;
   --color-sage: #2f6b4f;
   --color-danger: #a8322a;
+
+  /* Text sitting on a saturated fill — flips to ink in dark mode */
+  --color-on-fill: #fffdfa;
 }
 
 @theme inline {
@@ -42,11 +46,16 @@
 
   --color-ink: #f2ece3;
   --color-ink-2: #aca196;
-  --color-ink-3: #7a7166;
+  --color-ink-3: #8d857b;
 
-  --color-accent: #6b8e73;
+  --color-accent: #7d9b84;
   --color-sand: #c2a05a;
   --color-sage: #a8c49f;
+  --color-danger: #c16d68;
+
+  /* No accent can be both readable text on a dark page and a bed for white
+     text, so filled buttons take dark ink here instead */
+  --color-on-fill: #171512;
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.7);

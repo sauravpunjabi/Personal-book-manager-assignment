@@ -3,7 +3,7 @@ import type { CookieOptions, Response } from 'express';
 const TOKEN_COOKIE = 'token';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** SameSite=None in production, because Vercel and Railway are different domains */
+/** SameSite=None in production, because the app and the API are on different domains */
 function cookieOptions(): CookieOptions {
   const isProduction = process.env.NODE_ENV === 'production';
 

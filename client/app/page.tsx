@@ -89,7 +89,7 @@ export default function AuthPage() {
 function Wordmark() {
   return (
     <div className="flex items-center gap-[11px]">
-      <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-[#fffdfa]">
+      <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-on-fill">
         C
       </span>
       <span className="text-[14.5px] font-medium tracking-[-0.01em]">Chapter</span>

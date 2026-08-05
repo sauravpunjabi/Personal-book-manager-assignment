@@ -24,7 +24,7 @@ export function EmptyLibrary({ onAdd }: { onAdd: () => void }) {
       <button
         type="button"
         onClick={onAdd}
-        className="mt-[26px] flex h-11 items-center gap-2 rounded-[12px] bg-accent px-5 text-[14px] font-medium text-[#fffdfa] shadow-[var(--shadow-2)] transition-[filter,transform] hover:brightness-[1.06] active:scale-[.98]"
+        className="mt-[26px] flex h-11 items-center gap-2 rounded-[12px] bg-accent px-5 text-[14px] font-medium text-on-fill shadow-[var(--shadow-2)] transition-[filter,transform] hover:brightness-[1.06] active:scale-[.98]"
       >
         <svg
           width="14"

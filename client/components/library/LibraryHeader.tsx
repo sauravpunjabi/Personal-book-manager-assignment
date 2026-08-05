@@ -121,7 +121,7 @@ export function LibraryHeader({ books, name, onAdd }: LibraryHeaderProps) {
           <button
             type="button"
             onClick={onAdd}
-            className="flex h-10 items-center gap-2 rounded-[12px] bg-accent px-4 text-[13.5px] font-medium text-[#fffdfa] shadow-[var(--shadow-1)] transition-[filter,transform] hover:brightness-[1.06] active:scale-[.97]"
+            className="flex h-10 items-center gap-2 rounded-[12px] bg-accent px-4 text-[13.5px] font-medium text-on-fill shadow-[var(--shadow-1)] transition-[filter,transform] hover:brightness-[1.06] active:scale-[.97]"
           >
             <svg
               width="14"

@@ -6,8 +6,8 @@ Built as a technical assessment.
 
 ## Live
 
-- **App** — _deployment pending_
-- **API** — _deployment pending_
+- **App** — <https://book-chapter-nine.vercel.app>
+- **API** — <https://personal-book-manager-assignment.onrender.com>
 
 ## Stack
 
@@ -52,7 +52,7 @@ Fill in `.env` before starting:
 
 | Variable | What it's for |
 | --- | --- |
-| `PORT` | Port the API listens on. `5000` matches the client default. |
+| `PORT` | Optional. Defaults to `5000`; hosting platforms set their own. |
 | `MONGODB_URI` | Your MongoDB connection string, **including a database name** |
 | `JWT_SECRET` | Any long random string. `openssl rand -base64 48` works. |
 | `CLIENT_ORIGIN` | Where the frontend runs. `http://localhost:3000` locally. |
@@ -60,7 +60,7 @@ Fill in `.env` before starting:
 
 The server checks all of these on boot and exits with a clear message if any are missing, so a typo fails immediately rather than at first login.
 
-> **On the connection string:** put a database name before the `?`, like `...mongodb.net/chapter?retryWrites=true`. Leave it out and Mongoose quietly writes everything to a database called `test`.
+> **On the connection string:** put a database name before the `?`, like `...mongodb.net/bookmanager?retryWrites=true`. Leave it out and Mongoose quietly writes everything to a database called `test`.
 
 You should see:
 
@@ -145,6 +145,18 @@ Errors always come back as `{ "message": string }`, with `errors` added for per-
 
 **Deleting is deferred, not immediate.** Removing a book takes it off screen straight away but holds the API call for five seconds. Undo cancels it, so the record is never actually deleted and keeps its original id. Only if the toast expires does the request go out.
 
+## Accessibility
+
+Every interactive element is reachable and operable by keyboard. Dialogs — both the modal and the detail drawer — trap focus, close on Escape, return focus to whatever opened them, and lock the page behind. That behaviour lives in one shared hook so the two can't drift apart.
+
+Every input has a real `<label>` tied by `id`. Validation messages are linked to their field with `aria-describedby` and the field is marked `aria-invalid`, so a screen reader announces the error with the input rather than as loose text. Icon-only buttons carry an `aria-label` naming the book they act on. Status is never carried by colour alone — every pill and dot has a text label beside it.
+
+All colour pairs were measured against WCAG AA, which turned up ten failures in the original palette. The muted text tone, the "want to read" colour, and the dark-mode accent and danger colours were all adjusted until they passed. Dark mode needed an extra token: no single accent can be both readable as text on a dark page *and* a bed for white button text, so filled buttons take dark ink in that theme.
+
+**One known deviation.** Resting borders on inputs and cards sit at about 1.2:1 against the background, below the 3:1 that WCAG 1.4.11 asks for. That hairline is central to how the design looks, and raising it to 3:1 means replacing it with a mid-grey rule throughout. The compromise: borders stay as designed, and every focus state is unmistakable — the focus ring measures 5.5:1 or better in both themes. Worth knowing about rather than quietly leaving.
+
+Animation is opt-in throughout. Framer Motion checks `useReducedMotion`, GSAP is wrapped in `matchMedia`, and a global rule collapses CSS animations, so a reduced-motion preference means content simply appears.
+
 ## Known limitations
 
 - No pagination — a personal library is assumed to be small enough to load at once
@@ -161,10 +173,35 @@ Two places where this diverges from the original spec, both deliberate:
 
 ## Deploying
 
-**The app** goes on Vercel. Set the root directory to `client` and add `NEXT_PUBLIC_API_URL` pointing at the deployed API.
+The API is deployed on Render and the app on Vercel. Deploy the API first, so its URL is available when configuring the frontend.
 
-**The API** goes on Railway. Set the root directory to `server` and add all five environment variables. `CLIENT_ORIGIN` must be the exact Vercel URL — CORS sends credentials, so a wildcard won't work.
+### API — Render
 
-**One thing that will catch you out:** MongoDB Atlas → Network Access must allow `0.0.0.0/0`. Railway's outbound IPs change, so a single-IP allowlist can't work in production. The database is still protected by its username and password. Symptom if you forget: a TLS handshake error that looks like a network fault rather than a permissions one.
+New **Web Service**, pointed at this repo, with:
 
-Deploy the API first so you have its URL for Vercel, then set `CLIENT_ORIGIN` to the Vercel URL and redeploy the API.
+| Setting | Value |
+| --- | --- |
+| Root directory | `server` |
+| Build command | `npm ci --include=dev && npm run build` |
+| Start command | `npm start` |
+| Health check path | `/health` |
+
+`--include=dev` matters: `NODE_ENV=production` tells npm to skip dev dependencies, but TypeScript and the `@types` packages are needed to compile. They never reach the running server, which only runs the built output in `dist/`.
+
+Add the four required environment variables from the table above. `NODE_ENV` must be exactly `production` — that's what switches the auth cookie to `SameSite=None; Secure` so it survives a cross-domain request. Leave `PORT` unset; Render provides it.
+
+Confirm it's up by opening `/health` on the Render URL.
+
+### App — Vercel
+
+Import the repo, set the root directory to `client`, and add `NEXT_PUBLIC_API_URL` pointing at the Render URL with no trailing slash.
+
+### Then connect them
+
+Set `CLIENT_ORIGIN` on Render to the Vercel URL and redeploy. Until that's done the site loads but every request fails CORS, because the API only accepts the origin it's told about — credentials are sent, so a wildcard isn't allowed.
+
+### Two things that catch people out
+
+**Atlas Network Access must allow `0.0.0.0/0`.** Hosted platforms use rotating outbound IPs, so a single-IP allowlist can never work in production. The database is still protected by its username and password. The symptom if you forget is a TLS handshake failure that reads like a network fault rather than a permissions problem.
+
+**Render's free tier sleeps.** A free web service spins down after roughly 15 minutes of inactivity, and the next request takes about 50 seconds while it wakes. The app handles this correctly — it shows its loading skeleton rather than an error — but the first visit after an idle period is slow.

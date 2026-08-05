@@ -11,10 +11,10 @@ interface ButtonProps extends React.ComponentPropsWithRef<'button'> {
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-accent text-[#fffdfa] shadow-[var(--shadow-1)] hover:brightness-[1.06] active:scale-[.985]',
+    'bg-accent text-on-fill shadow-[var(--shadow-1)] hover:brightness-[1.06] active:scale-[.985]',
   secondary:
     'border border-line bg-surface text-ink hover:bg-surface-2 hover:border-ink-3',
-  danger: 'bg-danger text-[#fffdfa] hover:brightness-[1.06] active:scale-[.985]',
+  danger: 'bg-danger text-on-fill hover:brightness-[1.06] active:scale-[.985]',
   ghost: 'text-ink-2 hover:bg-surface-2 hover:text-ink',
 };
 

@@ -35,7 +35,7 @@ export function LibrarySidebar({ books }: LibrarySidebarProps) {
   return (
     <aside className="sticky top-0 flex h-screen w-[236px] shrink-0 flex-col border-r border-line bg-[color-mix(in_oklab,var(--color-surface)_55%,var(--color-bg))] px-4 pt-6 pb-[18px]">
       <div className="flex items-center gap-[11px] px-2 pb-[22px]">
-        <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-[#fffdfa]">
+        <span className="flex size-[26px] items-center justify-center rounded-[8px] bg-accent pb-0.5 font-display text-[16px] leading-none text-on-fill">
           C
         </span>
         <span className="text-[14.5px] font-medium tracking-[-0.01em]">Chapter</span>
